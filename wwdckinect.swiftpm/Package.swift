@@ -42,7 +42,7 @@ let package = Package(
             name: "AppModule",
             path: ".",
             resources: [
-                .copy("Resources/ExerciseClassifier.mlmodelc")
+                .copy("Model/ExerciseClassifier.mlmodelc")
             ],
             swiftSettings: [
                 .enableUpcomingFeature("BareSlashRegexLiterals")

@@ -53,7 +53,7 @@ extension MainViewController {
         videoProcessingChain.delegate = self
 
         // Begin receiving frames from the video capture.
-        if let sublayers = self.view.layer.sublayers {
+        if let subadds = self.view.layer.sublayers {
             for sublayer in sublayers {
                 if sublayer.isKind(of: AVCaptureVideoPreviewLayer.self) {
                     sublayer.removeFromSuperlayer()
