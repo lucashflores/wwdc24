@@ -122,7 +122,12 @@ extension Pose {
         connections = [Connection]()
 
         // Get the joint name for each landmark.
-        let joints = landmarks.map { $0.name }
+        let joints = landmarks.map {
+            if ($0.name == JointName.leftHip){
+                print($0.location)
+            }
+            return $0.name
+        }
 
         // Get the location for each landmark.
         let locations = landmarks.map { $0.location }

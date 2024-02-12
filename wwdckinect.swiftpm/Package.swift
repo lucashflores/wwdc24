@@ -20,8 +20,8 @@ let package = Package(
             teamIdentifier: "7P886DJU8X",
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .chatMessage),
-            accentColor: .presetColor(.green),
+            appIcon: .placeholder(icon: .lightningBolt),
+            accentColor: .presetColor(.indigo),
             supportedDeviceFamilies: [
                 .pad,
                 .phone
@@ -42,7 +42,9 @@ let package = Package(
             name: "AppModule",
             path: ".",
             resources: [
-                .copy("Model/ExerciseClassifier.mlmodelc")
+                .copy("Model/ExerciseClassifier.mlmodelc"),
+                .process("Resources"),
+                .process("art.scnassets")
             ],
             swiftSettings: [
                 .enableUpcomingFeature("BareSlashRegexLiterals")

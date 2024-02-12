@@ -6,34 +6,49 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            MainViewControllerRepresentable()
-            if let camera = self.viewModel.imageView {
-                Image(uiImage: camera)
-            }
-            else {
-                Image(systemName: "camera")
-            }
-            
-            VStack {
+            GameViewControllerRepresentable()
+            ZStack(alignment: .bottomTrailing) {
+                MainViewControllerRepresentable()
+                if let camera = self.viewModel.imageView {
+                    Image(uiImage: camera)
+                        .resizable()
+                        .frame(width: 600, height: 900)
+                }
+                else {
+                    Image(systemName: "camera")
+                    
+                }
+                
                 VStack {
-                    Text(self.viewModel.actionLabel)
-                        .font(.system(size: 60))
-                    Text(self.viewModel.confidenceLabel)
-                        .font(.system(size: 36))
-                }
-                .padding()
-                .background {
-                    Color.black.opacity(0.5)
+                    VStack {
+                        Text(self.viewModel.actionLabel)
+                            .font(.system(size: 60))
+                        Text(self.viewModel.confidenceLabel)
+                            .font(.system(size: 36))
+                    }
+                    .frame(maxWidth: 600)
+                    .background {
+                        Color.black.opacity(0.5)
+                    }
                 }
             }
-            .padding(.top, 800)
-            
-            
         }
-//        VStack {
-//            Text("Hello World")
-//        }
-//        
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+        .background(Color.red)
+        .edgesIgnoringSafeArea(.all)
+    }
+}
+    
+struct GameViewControllerRepresentable: UIViewControllerRepresentable {
+    typealias UIViewControllerType = GameViewController
+    private let gameViewController = GameViewController()
+    
+    func makeUIViewController(context: Context) -> GameViewController {
+        gameViewController
+    }
+    
+    func updateUIViewController(_ uiViewController: GameViewController, context: Context) {
+        
     }
 }
 
