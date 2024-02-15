@@ -12,30 +12,12 @@ import SwiftUI
 
 @available(iOS 14.0, *)
 class MainViewController: UIViewController {
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    /// The full-screen view that presents the pose on top of the video frames.
-    
     @ObservedObject var viewModel: ContentViewModel = ContentViewModel.getInstance()
-    /// Captures the frames from the camera and creates a frame publisher.
+
     var videoCapture: VideoCapture!
 
-    /// Builds a chain of Combine publishers from a frame publisher.
-    ///
-    /// The video-processing chain provides the view controller with:
-    /// - Each video camera frame as a `CGImage`.
-    /// - A `Pose` array of any people `Vision` observed in that frame.
-    /// - Action predictions from the prominent person's poses over time.
     var videoProcessingChain: VideoProcessingChain!
 
-    /// Maintains the aggregate time for each action the model predicts.
-    /// - Tag: actionFrameCounts
     var actionFrameCounts = [String: Int]()
 }
 
@@ -44,7 +26,6 @@ extension MainViewController {
     /// Configures the main view after it loads.
     override func viewDidLoad() {
         super.viewDidLoad()
-
         // Disable the idle timer to prevent the screen from locking.
         UIApplication.shared.isIdleTimerDisabled = true
 
@@ -63,7 +44,7 @@ extension MainViewController {
         videoCapture = VideoCapture()
         videoCapture.delegate = self
 
-        updateUILabelsWithPrediction(.startingPrediction)
+//        updateUILabelsWithPrediction(.startingPrediction)
     }
 
     /// Configures the video captures session with the device's orientation.
@@ -94,7 +75,7 @@ extension MainViewController: VideoCaptureDelegate {
     ///   - framePublisher: A new frame publisher from the video capture.
     func videoCapture(_ videoCapture: VideoCapture,
                       didCreate framePublisher: FramePublisher) {
-        updateUILabelsWithPrediction(.startingPrediction)
+//        updateUILabelsWithPrediction(.startingPrediction)
         
         // Build a new video-processing chain by assigning the new frame publisher.
         videoProcessingChain.upstreamFramePublisher = framePublisher
@@ -159,7 +140,32 @@ extension MainViewController {
     ///   - confidence: The prediction's confidence value.
     private func updateUILabelsWithPrediction(_ prediction: ActionPrediction) {
         // Update the UI's prediction label on the main thread.
-        DispatchQueue.main.async { self.viewModel.actionLabel = prediction.label}
+        DispatchQueue.main.async {
+            var label = prediction.label
+            self.viewModel.actionLabel = label
+            switch label {
+                case "standing_middle":
+                    NotificationCenter.default.post(name: Notification.Name("didStandInTheMiddle"), object: nil, userInfo: nil)
+                case "standing_left":
+                    NotificationCenter.default.post(name: Notification.Name("didStandInTheLeft"), object: nil, userInfo: nil)
+                case "standing_right":
+                    NotificationCenter.default.post(name: Notification.Name("didStandInTheRight"), object: nil, userInfo: nil)
+                case "jumping_middle":
+                    NotificationCenter.default.post(name: Notification.Name("didJumpInTheMiddle"), object: nil, userInfo: nil)
+                case "jumping_left":
+                    NotificationCenter.default.post(name: Notification.Name("didJumpInTheLeft"), object: nil, userInfo: nil)
+                case "jumping_right":
+                    NotificationCenter.default.post(name: Notification.Name("didJumpInTheRight"), object: nil, userInfo: nil)
+                case "crouching_middle":
+                    NotificationCenter.default.post(name: Notification.Name("didCrouchInTheMiddle"), object: nil, userInfo: nil)
+                case "crouching_left":
+                    NotificationCenter.default.post(name: Notification.Name("didCrouchInTheLeft"), object: nil, userInfo: nil)
+                case "crouching_right":
+                    NotificationCenter.default.post(name: Notification.Name("didCrouchInTheRight"), object: nil, userInfo: nil)
+                default:
+                    ()
+            }
+        }
 
         // Update the UI's confidence label on the main thread.
         let confidenceString = prediction.confidenceString ?? "Observing..."
@@ -215,6 +221,23 @@ extension MainViewController {
 
         // Update the UI's full-screen image view on the main thread.
         DispatchQueue.main.async { self.viewModel.imageView = frameWithPosesRendering }
+    }
+}
+
+extension MainViewController {
+    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        guard let key = presses.first?.key else { return }
+        
+        switch key.keyCode {
+        case .keyboardUpArrow:
+            NotificationCenter.default.post(name: Notification.Name("didPressUpArrowKey"), object: nil, userInfo: nil)
+        case .keyboardLeftArrow:
+            NotificationCenter.default.post(name: Notification.Name("didPressLeftArrowKey"), object: nil, userInfo: nil)
+        case .keyboardRightArrow:
+            NotificationCenter.default.post(name: Notification.Name("didPressRightArrowKey"), object: nil, userInfo: nil)
+        default:
+            super.pressesBegan(presses, with: event)
+        }
     }
 }
 

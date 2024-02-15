@@ -7,6 +7,7 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             GameViewControllerRepresentable()
+            
             ZStack(alignment: .bottomTrailing) {
                 MainViewControllerRepresentable()
                 if let camera = self.viewModel.imageView {
@@ -39,17 +40,6 @@ struct ContentView: View {
     }
 }
     
-struct GameViewControllerRepresentable: UIViewControllerRepresentable {
-    typealias UIViewControllerType = GameViewController
-    private let gameViewController = GameViewController()
-    
-    func makeUIViewController(context: Context) -> GameViewController {
-        gameViewController
-    }
-    
-    func updateUIViewController(_ uiViewController: GameViewController, context: Context) {
-        
-    }
-}
+
 
 

@@ -62,7 +62,7 @@ struct VideoProcessingChain {
     private let humanBodyPoseRequest = VNDetectHumanBodyPoseRequest()
 
     /// The action classifier that recognizes exercise activities.
-    private let actionClassifier = ExerciseClassifier.shared
+    private let actionClassifier = ActionClassifier.shared
 
     /// The number of pose data instances the action classifier needs
     /// to make a prediction.
@@ -84,12 +84,13 @@ struct VideoProcessingChain {
     private var performanceReporter = PerformanceReporter()
 
     init() {
-        predictionWindowSize = actionClassifier.calculatePredictionWindowSize()
+        predictionWindowSize = 10
     }
 }
 
 // MARK: - Combine Chain Builder
 extension VideoProcessingChain {
+    typealias Landmark = Pose.Landmark
     /// Clears and (re)builds a series of Combine publishers that subscribes to
     /// a video frame publisher and generates action predictions.
     ///
@@ -127,22 +128,18 @@ extension VideoProcessingChain {
 
             // ---- Pose? -- Pose? ----
 
-            // Publish the locations of the pose's landmarks as an
-            // `MLMultiArray` to the next subscriber.
-            .map(multiArrayFromPose)
-
             // ---- MLMultiArray? -- MLMultiArray? ----
 
-            // Gather a window of multiarrays, starting with an empty window.
-            .scan([MLMultiArray?](), gatherWindow)
-
-            // ---- [MLMultiArray?] -- [MLMultiArray?] ----
-
-            // Only publish a window when it grows to the correct size.
-            .filter(gateWindow)
-
-            // ---- [MLMultiArray?] -- [MLMultiArray?] ----
-
+//            // Gather a window of multiarrays, starting with an empty window.
+//            .scan([Pose?](), gatherWindow)
+//
+//            // ---- [MLMultiArray?] -- [MLMultiArray?] ----
+//
+//            // Only publish a window when it grows to the correct size.
+//            .filter(gateWindow)
+//
+//            // ---- [MLMultiArray?] -- [MLMultiArray?] ----
+//
             // Make an activity prediction from the window.
             .map(predictActionWithWindow)
 
@@ -222,8 +219,8 @@ extension VideoProcessingChain {
     /// - Parameter item: A pose from a human body-pose request.
     /// - Returns: The locations of the pose's landmarks in an `MLMultiArray`.
     /// - Tag: multiArrayFromPose
-    private func multiArrayFromPose(_ item: Pose?) -> MLMultiArray? {
-        return item?.multiArray
+    private func landMarksFromPose(_ item: Pose?) -> [Landmark]? {
+        return item?.landmarks
     }
 
     /// Collects a window of multiarrays by appending the most recent
@@ -237,8 +234,8 @@ extension VideoProcessingChain {
     /// to the window, it removes the oldest multiarray elements
     /// if the previous window's count is the target size.
     /// - Tag: gatherWindow
-    private func gatherWindow(previousWindow: [MLMultiArray?],
-                              multiArray: MLMultiArray?) -> [MLMultiArray?] {
+    private func gatherWindow(previousWindow: [Pose?],
+                              multiArray: Pose?) -> [Pose?] {
         var currentWindow = previousWindow
 
         // If the previous window size is the target size, it
@@ -264,7 +261,7 @@ extension VideoProcessingChain {
     /// - Returns: `true` if `currentWindow` contains `predictionWindowSize`
     /// elements; otherwise `false`.
     /// - Tag: gateWindow
-    private func gateWindow(_ currentWindow: [MLMultiArray?]) -> Bool {
+    private func gateWindow(_ currentWindow: [Pose?]) -> Bool {
         return currentWindow.count == predictionWindowSize
     }
 
@@ -272,49 +269,38 @@ extension VideoProcessingChain {
     /// - Parameter currentWindow: An`MLMultiArray?` array.
     /// - Returns: An `ActionPrediction`.
     /// - Tag: predictActionWithWindow
-    private func predictActionWithWindow(_ currentWindow: [MLMultiArray?]) -> ActionPrediction {
+    private func predictActionWithWindow(_ currentWindow: Pose?) -> ActionPrediction {
         var poseCount = 0
 
         // Fill the nil elements with an empty pose array.
-        let filledWindow: [MLMultiArray] = currentWindow.map { multiArray in
-            if let multiArray = multiArray {
-                poseCount += 1
-                return multiArray
-            } else {
-                return Pose.emptyPoseMultiArray
-            }
-        }
+//        let filledWindow: [Pose?] = currentWindow.map { pose in
+//            if let pose = pose {
+//                poseCount += 1
+//                return pose
+//            } else {
+//                return nil
+//            }
+//        }
 
         // Only use windows with at least 60% real data to make a prediction
         // with the action classifier.
-        let minimum = predictionWindowSize * 60 / 100
-        guard poseCount >= minimum else {
-            return ActionPrediction.noPersonPrediction
-        }
-
-        // Merge the array window of multiarrays into one multiarray.
-        let mergedWindow = MLMultiArray(concatenating: filledWindow,
-                                        axis: 0,
-                                        dataType: .float)
+//        let minimum = predictionWindowSize * 60 / 100
+//        guard poseCount >= minimum else {
+//            return ActionPrediction.noPersonPrediction
+//        }
+//
+//        // Merge the array window of multiarrays into one multiarray.
+//        let mergedWindow = MLMultiArray(concatenating: filledWindow,
+//                                        axis: 0,
+//                                        dataType: .float)
 
         // Make a genuine prediction with the action classifier.
-        let prediction = actionClassifier.predictActionFromWindow(mergedWindow)
-
-        // Return the model's prediction if the confidence is high enough.
-        // Otherwise, return a "Low Confidence" prediction.
-        return checkConfidence(prediction)
+        return actionClassifier.predictActionFromPose(currentWindow)
     }
 
-    /// Sends an action prediction to the delegate on the main thread.
-    /// - Parameter actionPrediction: The action classifier's prediction.
-    /// - Tag: checkConfidence
-    private func checkConfidence(_ actionPrediction: ActionPrediction) -> ActionPrediction {
-        let minimumConfidence = 0.6
-
-        let lowConfidence = actionPrediction.confidence < minimumConfidence
-        return lowConfidence ? .lowConfidencePrediction : actionPrediction
-    }
-
+//     Sends an action prediction to the delegate on the main thread.
+//     - Parameter actionPrediction: The action classifier's prediction.
+//  - Tag: checkConfidence
     /// Sends an action prediction to the delegate on the main thread.
     /// - Parameter actionPrediction: The action classifier's prediction.
     /// - Tag: sendPrediction

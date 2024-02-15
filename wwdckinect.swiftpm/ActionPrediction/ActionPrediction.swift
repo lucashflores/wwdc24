@@ -39,11 +39,6 @@ struct ActionPrediction {
 extension ActionPrediction {
     /// Defines placeholder prediction labels beyond the scope of the
     /// action classifier model.
-    private enum AppLabel: String {
-        case starting = "Starting Up"
-        case noPerson = "No Person"
-        case lowConfidence = "Low Confidence"
-    }
 
     /// A prediction that represents a time window that doesn't contain
     /// enough human body pose observations.
@@ -63,7 +58,7 @@ extension ActionPrediction {
     /// - Parameter otherLabel: A label defined by the application, not the
     /// action classifier model.
     /// Only the `lowConfidence()` and `noPerson()` type methods use this initializer.
-    private init(_ otherLabel: AppLabel) {
+    public init(_ otherLabel: AppLabel) {
         label = otherLabel.rawValue
         confidence = nil
     }
@@ -77,4 +72,10 @@ extension ActionPrediction {
     ///
     /// `isAppLabel` and `isModelLabel` are mutually exclusive.
     var isAppLabel: Bool { confidence == nil }
+}
+
+enum AppLabel: String {
+    case starting = "Starting Up"
+    case noPerson = "No Person"
+    case lowConfidence = "Low Confidence"
 }

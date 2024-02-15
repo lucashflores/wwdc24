@@ -16,6 +16,8 @@ extension Pose {
     /// This instance has the same shape as the multiarray from a
     /// `VNHumanBodyPoseObservation` instance.
     /// - Tag: emptyPoseMultiArray
+//    static let emptyPose = Pose(Observation)
+    ///
     static let emptyPoseMultiArray = zeroedMultiArrayWithShape([1, 3, 18])
 
     /// Creates a multiarray and assigns zero to every element.

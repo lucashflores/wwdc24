@@ -15,14 +15,13 @@ typealias Observation = VNHumanBodyPoseObservation
 /// - Tag: Pose
 struct Pose {
     /// The names and locations of the significant points on a human body.
-    private let landmarks: [Landmark]
+    public let landmarks: [Landmark]
 
     /// A list of lines between landmarks for drawing a wireframe.
     private var connections: [Connection]!
 
     /// The locations of the pose's landmarks as a multiarray.
     /// - Tag: multiArray
-    let multiArray: MLMultiArray?
 
     /// A rough approximation of the landmarks' area.
     let area: CGFloat
@@ -57,7 +56,8 @@ struct Pose {
         area = Pose.areaEstimateOfLandmarks(landmarks)
 
         // Save the multiarray from the observation.
-        multiArray = try? observation.keypointsMultiArray()
+//        multiArray = try? observation.keypointsMultiArray()
+    
 
         // Build a list of connections from the pose's landmarks.
         buildConnections()
@@ -123,9 +123,6 @@ extension Pose {
 
         // Get the joint name for each landmark.
         let joints = landmarks.map {
-            if ($0.name == JointName.leftHip){
-                print($0.location)
-            }
             return $0.name
         }
 

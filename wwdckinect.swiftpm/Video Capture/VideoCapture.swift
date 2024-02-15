@@ -190,10 +190,10 @@ extension VideoCapture {
         defer { captureSession.commitConfiguration() }
 
         // Set the video camera to run at the action classifier's frame rate.
-        let modelFrameRate = ExerciseClassifier.frameRate
+//        let modelFrameRate = ExerciseClassifier.frameRate
 
         let input = AVCaptureDeviceInput.createCameraInput(position: cameraPosition,
-                                                           frameRate: modelFrameRate)
+                                                           frameRate: 30)
 
         let output = AVCaptureVideoDataOutput.withPixelFormatType(kCVPixelFormatType_32BGRA)
 

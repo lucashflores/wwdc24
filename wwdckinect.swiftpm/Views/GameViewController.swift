@@ -13,9 +13,9 @@ import QuartzCore
 import SceneKit
 import SpriteKit
 import CoreData
+import SwiftUI
 
-class GameViewController: UIViewController,SCNPhysicsContactDelegate {
-    
+class GameViewController: UIViewController, SCNPhysicsContactDelegate {
 //    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     var scnView = SCNView()
     
@@ -34,15 +34,16 @@ class GameViewController: UIViewController,SCNPhysicsContactDelegate {
     var interval1: Double=2
     var score: Int = 0
     var paused = false
+    var isCarRunningAction = false
     
     
     var highScoreClosure: () -> Void = {}
     
     override func viewDidLoad() {
         super.viewDidLoad()
-//        let sizeScnView = CGSize(width: 1330, height: 1000)
+        configureCommandsNotifications()
         let sizeScnView = CGSize(width: 2250, height: 1405)
-        let centerView = CGPoint(x: CGRectGetMidX(self.view.frame) - sizeScnView.width/2, y: CGRectGetMidY(self.view.frame) - sizeScnView.height/2)
+        
         scnView.frame = CGRect(origin: .zero, size: sizeScnView)
 
         scene = SCNScene(named: "sedanSportsScn.scn")!
@@ -87,20 +88,27 @@ class GameViewController: UIViewController,SCNPhysicsContactDelegate {
         timer = Timer.scheduledTimer(timeInterval: TimeInterval(interval1), target: self, selector: #selector(update4t(timer:)), userInfo: nil, repeats: true)
     }
  
-    func moveCar(direction: moveCarDirection){
+    func moveCar(direction: moveCarDirection) {
+        if (isCarRunningAction) {
+            return
+        }
         switch direction {
         case .right :
             if car.presentation.position.x.rounded() > -15 {
+                startActionCooldown(duration: 0.2)
                 car.runAction(SCNAction.moveBy(x: -15, y: 0, z: 0, duration: 0.2), completionHandler: nil)
+                
             }
         case .left :
             if car.presentation.position.x.rounded() < 15 {
+                startActionCooldown(duration: 0.2)
                 car.runAction(SCNAction.moveBy(x: 15, y: 0, z: 0, duration: 0.2), completionHandler: nil)
+                
             }
         case .up :
             print(car.presentation.position.y)
             if car.presentation.position.y < 5.5 {
-    
+                startActionCooldown(duration: 1)
                 let moveUp = SCNAction.moveBy(x: 0, y: 25, z: 0, duration: 0.5)
                 moveUp.timingMode = SCNActionTimingMode.easeOut;
                 print(car.presentation.position.y)
@@ -109,6 +117,7 @@ class GameViewController: UIViewController,SCNPhysicsContactDelegate {
                 let moveSequence = SCNAction.sequence([moveUp,moveDown])
                 print(car.presentation.position.y)
                 car.runAction(moveSequence, completionHandler: nil)
+                
             }
             print("up")
 //        case UISwipeGestureRecognizer.Direction.down :
@@ -117,6 +126,14 @@ class GameViewController: UIViewController,SCNPhysicsContactDelegate {
         
     }
     
+    func startActionCooldown(duration: Double) {
+        isCarRunningAction = true
+        Timer.scheduledTimer(timeInterval: duration, target: self, selector: #selector(endActionCooldown), userInfo: nil, repeats: false)
+    }
+    
+    @objc func endActionCooldown() {
+        isCarRunningAction = false
+    }
     
     override var shouldAutorotate: Bool {
         return true
@@ -137,25 +154,139 @@ class GameViewController: UIViewController,SCNPhysicsContactDelegate {
     @objc func update4t(timer:Timer) -> Void {
         if !paused{
             gameTime += interval1
-//            let roadToSpawn = roads.allCases.randomElement()!
-//            let o4=obs(pos: SCNVector3(roadToSpawn.rawValue,7,-100), vel: SCNVector3(0,0,-150))
-//            scene.rootNode.addChildNode(o4)
+            let roadToSpawn = roads.allCases.randomElement()!
+            let o4=obs(pos: SCNVector3(roadToSpawn.rawValue,7,-100), vel: SCNVector3(0,0,-150))
+            scene.rootNode.addChildNode(o4)
             updateHUD()}
         
     }
     
-    override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        guard let key = presses.first?.key else { return }
-
-        switch key.keyCode {
-        case .keyboardUpArrow:
-            moveCar(direction: .up)
-        case .keyboardLeftArrow:
-            moveCar(direction: .left)
-        case .keyboardRightArrow:
+    func configureCommandsNotifications() {
+        func didPressRightArrowKey() {
             moveCar(direction: .right)
-        default:
-            super.pressesBegan(presses, with: event)
+        }
+        
+        func didPressLeftArrowKey() {
+            moveCar(direction: .left)
+        }
+        
+        func didPressUpArrowKey() {
+            moveCar(direction: .up)
+        }
+        
+        func didStandInTheMiddle() {
+            let carX = car.presentation.position.x.rounded()
+            print(carX)
+            if (carX == roads.roadLeft.rawValue) {
+                moveCar(direction: .right)
+            }
+            else if (carX <= roads.roadRight.rawValue) {
+                moveCar(direction: .left)
+            }
+        }
+        
+        func didStandInTheLeft() {
+            let carX = car.presentation.position.x.rounded()
+            print(carX)
+            if (carX == roads.roadMiddle.rawValue) {
+                moveCar(direction: .left)
+            }
+            else if (carX == roads.roadRight.rawValue) {
+                moveCar(direction: .left)
+                while (isCarRunningAction) {}
+                moveCar(direction: .left)
+            }
+        }
+        
+        func didStandInTheRight() {
+            let carX = car.presentation.position.x.rounded()
+            print(carX)
+            if (carX == roads.roadMiddle.rawValue) {
+                moveCar(direction: .right)
+            }
+            else if (carX >= roads.roadLeft.rawValue) {
+                moveCar(direction: .right)
+                while (isCarRunningAction) {}
+                moveCar(direction: .right)
+            }
+        }
+        
+        func didJumpInTheMiddle() {
+            didStandInTheMiddle()
+            moveCar(direction: .up)
+        }
+        
+        func didJumpInTheLeft() {
+            didStandInTheLeft()
+            moveCar(direction: .up)
+        }
+        
+        func didJumpInTheRight() {
+            didStandInTheRight()
+            moveCar(direction: .up)
+        }
+        
+        func didCrouchInTheMiddle() {
+            didStandInTheMiddle()
+            moveCar(direction: .up)
+        }
+        
+        func didCrouchInTheLeft() {
+            didStandInTheLeft()
+            moveCar(direction: .up)
+        }
+        
+        func didCrouchInTheRight() {
+            didStandInTheRight()
+            moveCar(direction: .up)
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didPressRightArrowKey"), object: nil, queue: nil) { (notification) in
+            didPressRightArrowKey()
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didPressLeftArrowKey"), object: nil, queue: nil) { (notification) in
+            didPressLeftArrowKey()
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didPressUpArrowKey"), object: nil, queue: nil) { (notification) in
+            didPressUpArrowKey()
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didStandInTheLeft"), object: nil, queue: nil) { (notification) in
+            didStandInTheLeft()
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didStandInTheRight"), object: nil, queue: nil) { (notification) in
+            didStandInTheRight()
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didStandInTheMiddle"), object: nil, queue: nil) { (notification) in
+            didStandInTheMiddle()
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didJumpInTheLeft"), object: nil, queue: nil) { (notification) in
+            didJumpInTheLeft()
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didJumpInTheRight"), object: nil, queue: nil) { (notification) in
+            didJumpInTheRight()
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didJumpInTheMiddle"), object: nil, queue: nil) { (notification) in
+            didJumpInTheMiddle()
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheLeft"), object: nil, queue: nil) { (notification) in
+            didCrouchInTheLeft()
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheRight"), object: nil, queue: nil) { (notification) in
+            didCrouchInTheRight()
+        }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheMiddle"), object: nil, queue: nil) { (notification) in
+            didCrouchInTheMiddle()
         }
     }
     
@@ -228,21 +359,7 @@ class GameViewController: UIViewController,SCNPhysicsContactDelegate {
         var mes="your Score:\(score)"
         scene.isPaused=true
         paused=true
-        
-//        for s in Const.CDscores{
-//            if score > s.hscore {
-////                Const.highScores.remove(at: 4)
-////                Const.highScores.append(score)x
-//                mes="your Score:\(score) \n New Highscore!"
-//                
-////                storeScore(score: self.score, date: Date())
-//                
-//                break
-//            }
-//            
-//        }
-//        storeScore(score: self.score, date: Date())
-        //        gameOverAlert(score: score, VC: self,message: mes)
+    
         let alertController = UIAlertController(title: "Game Over!", message: mes, preferredStyle: .alert)
         
         let OKAction = UIAlertAction(title: "Main Menu", style: .default) { (action) in self.dismiss(animated: true, completion: nil)}
@@ -260,10 +377,24 @@ class GameViewController: UIViewController,SCNPhysicsContactDelegate {
 }
 
 
-enum roads: Int, CaseIterable {
-    case roadLeft = -15
+struct GameViewControllerRepresentable: UIViewControllerRepresentable {
+    typealias UIViewControllerType = GameViewController
+    private let gameViewController = GameViewController()
+    
+    func makeUIViewController(context: Context) -> GameViewController {
+        gameViewController
+    }
+    
+    func updateUIViewController(_ uiViewController: GameViewController, context: Context) {
+        
+    }
+}
+
+
+enum roads: Float, CaseIterable {
+    case roadLeft = 15
     case roadMiddle = 0
-    case roadRight = 15
+    case roadRight = -15
 }
 
 enum moveCarDirection {
