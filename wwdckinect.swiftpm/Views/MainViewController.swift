@@ -12,7 +12,9 @@ import SwiftUI
 
 @available(iOS 14.0, *)
 class MainViewController: UIViewController {
-    @ObservedObject var viewModel: ContentViewModel = ContentViewModel.getInstance()
+    @ObservedObject var viewModel: CameraViewModel = CameraViewModel.getInstance()
+    
+    var queue = DispatchQueue(label: "com.lucashflores.wwdckinect", attributes: .concurrent)
 
     var videoCapture: VideoCapture!
 
@@ -141,7 +143,7 @@ extension MainViewController {
     private func updateUILabelsWithPrediction(_ prediction: ActionPrediction) {
         // Update the UI's prediction label on the main thread.
         DispatchQueue.main.async {
-            var label = prediction.label
+            let label = prediction.label
             self.viewModel.actionLabel = label
             switch label {
                 case "standing_middle":

@@ -35,7 +35,7 @@ protocol VideoProcessingChainDelegate: AnyObject {
 /// - Tag: VideoProcessingChain
 struct VideoProcessingChain {
     /// The video-processing chain's delegate.
-    ///
+    
     /// Set this property to receive poses and action predictions.
     /// - Tag: delegate-VideoProcessingChain
     weak var delegate: VideoProcessingChainDelegate?
@@ -111,41 +111,10 @@ extension VideoProcessingChain {
         // Create the chain of publisher-subscribers that transform the raw video
         // frames from upstreamFramePublisher.
         frameProcessingChain = upstreamFramePublisher
-            // ---- Frame (aka CMSampleBuffer) -- Frame ----
-
-            // Convert each frame to a CGImage, skipping any that don't convert.
             .compactMap(imageFromFrame)
-
-            // ---- CGImage -- CGImage ----
-
-            // Detect any human body poses (or lack of them) in the frame.
             .map(findPosesInFrame)
-
-            // ---- [Pose]? -- [Pose]? ----
-
-            // Isolate the pose with the largest area in the frame.
             .map(isolateLargestPose)
-
-            // ---- Pose? -- Pose? ----
-
-            // ---- MLMultiArray? -- MLMultiArray? ----
-
-//            // Gather a window of multiarrays, starting with an empty window.
-//            .scan([Pose?](), gatherWindow)
-//
-//            // ---- [MLMultiArray?] -- [MLMultiArray?] ----
-//
-//            // Only publish a window when it grows to the correct size.
-//            .filter(gateWindow)
-//
-//            // ---- [MLMultiArray?] -- [MLMultiArray?] ----
-//
-            // Make an activity prediction from the window.
             .map(predictActionWithWindow)
-
-            // ---- ActionPrediction -- ActionPrediction ----
-
-            // Send the action prediction to the delegate.
             .sink(receiveValue: sendPrediction)
     }
 }
@@ -270,31 +239,6 @@ extension VideoProcessingChain {
     /// - Returns: An `ActionPrediction`.
     /// - Tag: predictActionWithWindow
     private func predictActionWithWindow(_ currentWindow: Pose?) -> ActionPrediction {
-        var poseCount = 0
-
-        // Fill the nil elements with an empty pose array.
-//        let filledWindow: [Pose?] = currentWindow.map { pose in
-//            if let pose = pose {
-//                poseCount += 1
-//                return pose
-//            } else {
-//                return nil
-//            }
-//        }
-
-        // Only use windows with at least 60% real data to make a prediction
-        // with the action classifier.
-//        let minimum = predictionWindowSize * 60 / 100
-//        guard poseCount >= minimum else {
-//            return ActionPrediction.noPersonPrediction
-//        }
-//
-//        // Merge the array window of multiarrays into one multiarray.
-//        let mergedWindow = MLMultiArray(concatenating: filledWindow,
-//                                        axis: 0,
-//                                        dataType: .float)
-
-        // Make a genuine prediction with the action classifier.
         return actionClassifier.predictActionFromPose(currentWindow)
     }
 

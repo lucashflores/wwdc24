@@ -35,10 +35,10 @@ class ActionClassifier {
         
         var position: String
         var action: String
-        if (bodyX <= 0.33) {
+        if (bodyX <= 0.40) {
             position = "left"
         }
-        else if (bodyX > 0.33 && bodyX < 0.66) {
+        else if (bodyX > 0.40 && bodyX < 0.60) {
             position = "middle"
         }
         else {
@@ -46,10 +46,10 @@ class ActionClassifier {
         }
         
         if (neckJoint != nil) {
-            if (bodyY <= 0.45) {
-                action = "crouching"
-            }
-            else if (bodyY <= 0.80) {
+//            if (bodyY <= 0.45) {
+//                action = "crouching"
+//            }
+            if (bodyY <= 0.80) {
                 action = "standing"
             }
             else {

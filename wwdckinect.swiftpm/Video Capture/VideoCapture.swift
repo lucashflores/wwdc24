@@ -31,7 +31,7 @@ protocol VideoCaptureDelegate: AnyObject {
 /// - Tag: VideoCapture
 class VideoCapture: NSObject {
     /// The video capture's delegate.
-    ///
+    var queue = DispatchQueue(label: "com.lucashflores.wwdckinect")
     /// Set this property to receive pose and action prediction notifications.
     weak var delegate: VideoCaptureDelegate! {
         didSet { createVideoFramePublisher() }
@@ -140,7 +140,10 @@ extension VideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
                        from connection: AVCaptureConnection) {
 
         // Forward the frame through the publisher.
-        framePublisher?.send(frame)
+        let lock = UnfairLock()
+        lock.locked {
+            self.framePublisher?.send(frame)
+        }
     }
 }
 

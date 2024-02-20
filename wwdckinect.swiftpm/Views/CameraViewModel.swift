@@ -8,17 +8,19 @@
 import Foundation
 import UIKit
 
-class ContentViewModel: ObservableObject {
-    static var instance: ContentViewModel = ContentViewModel()
+class CameraViewModel: ObservableObject {
+    static var instance: CameraViewModel = CameraViewModel()
     @Published var confidenceLabel = ""
     @Published var actionLabel = ""
     @Published var imageView: UIImage?
+
+ 
     
     private init() {
         
     }
     
-    static func getInstance() -> ContentViewModel {
+    static func getInstance() -> CameraViewModel {
         return instance
     }
 }

@@ -16,7 +16,7 @@ let package = Package(
         .iOSApplication(
             name: "WWDCKinect",
             targets: ["AppModule"],
-            bundleIdentifier: "kinect3",
+            bundleIdentifier: "com.lucashflores.wwdckinect",
             teamIdentifier: "7P886DJU8X",
             displayVersion: "1.0",
             bundleVersion: "1",
@@ -42,7 +42,6 @@ let package = Package(
             name: "AppModule",
             path: ".",
             resources: [
-                .copy("Model/ExerciseClassifier.mlmodelc"),
                 .process("Resources"),
                 .process("art.scnassets")
             ],

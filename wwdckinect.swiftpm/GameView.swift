@@ -1,8 +1,10 @@
 import SwiftUI
 import AVFoundation
 
-struct ContentView: View {
-    @ObservedObject var viewModel = ContentViewModel.getInstance()
+struct GameView: View {
+    @Binding var currentScreen: Screen
+    @ObservedObject var cameraViewModel = CameraViewModel.getInstance()
+    @ObservedObject var gameViewModel = GameViewModel.getInstance()
     
     var body: some View {
         ZStack {
@@ -10,7 +12,7 @@ struct ContentView: View {
             
             ZStack(alignment: .bottomTrailing) {
                 MainViewControllerRepresentable()
-                if let camera = self.viewModel.imageView {
+                if let camera = self.cameraViewModel.imageView {
                     Image(uiImage: camera)
                         .resizable()
                         .frame(width: 600, height: 900)
@@ -22,9 +24,9 @@ struct ContentView: View {
                 
                 VStack {
                     VStack {
-                        Text(self.viewModel.actionLabel)
+                        Text(self.cameraViewModel.actionLabel)
                             .font(.system(size: 60))
-                        Text(self.viewModel.confidenceLabel)
+                        Text(self.cameraViewModel.confidenceLabel)
                             .font(.system(size: 36))
                     }
                     .frame(maxWidth: 600)
@@ -33,10 +35,16 @@ struct ContentView: View {
                     }
                 }
             }
+            
+            if (gameViewModel.gameOver) {
+                GameOverView(currentScreen: $currentScreen, score: gameViewModel.score)
+            }
         }
         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
         .background(Color.red)
         .edgesIgnoringSafeArea(.all)
+        
+        
     }
 }
     

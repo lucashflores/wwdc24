@@ -17,6 +17,7 @@ import SwiftUI
 
 class GameViewController: UIViewController, SCNPhysicsContactDelegate {
 //    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    @ObservedObject var viewModel: GameViewModel = GameViewModel.getInstance()
     var scnView = SCNView()
     
     var cameraNode:SCNNode!
@@ -24,6 +25,8 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     var roadLeft: SCNNode!
     var roadMiddle: SCNNode!
     var roadRight: SCNNode!
+    var obstacles: SCNNode = SCNNode()
+    var coins: SCNNode = SCNNode()
     var timer = Timer()
     var gameTime: Double = 0
     var obstacle1: SCNNode!
@@ -46,7 +49,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         
         scnView.frame = CGRect(origin: .zero, size: sizeScnView)
 
-        scene = SCNScene(named: "sedanSportsScn.scn")!
+        scene = SCNScene(named: "main.scn")!
         cameraNode = scene.rootNode.childNode(withName: "camera", recursively: true)!
         
         car = scene.rootNode.childNode(withName: "car", recursively: true)!
@@ -70,11 +73,9 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         roadRight = scene.rootNode.childNode(withName: "road_right", recursively: true)!
         roadRight.physicsBody = SCNPhysicsBody(type: .static, shape: SCNPhysicsShape(node: roadRight))
         roadRight.physicsBody?.categoryBitMask = 1
-        
+        scene.rootNode.addChildNode(obstacles)
         scene.physicsWorld.contactDelegate=self
         scnView.scene = scene
-//        initialObs()
-//        scnView.allowsCameraControl = true
         scnView.showsStatistics = true
         scnView.pointOfView?.camera?.zFar = 700
         scnView.backgroundColor = UIColor.black
@@ -152,13 +153,22 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     }
     
     @objc func update4t(timer:Timer) -> Void {
-        if !paused{
+        if !paused {
             gameTime += interval1
-            let roadToSpawn = roads.allCases.randomElement()!
-            let o4=obs(pos: SCNVector3(roadToSpawn.rawValue,7,-100), vel: SCNVector3(0,0,-150))
-            scene.rootNode.addChildNode(o4)
-            updateHUD()}
+//            let roadToSpawn = roads.allCases.randomElement()!
+//            let o4=obs(pos: SCNVector3(roadToSpawn.rawValue,7,-100), vel: SCNVector3(0,0,-150))
+//            obstacles.addChildNode(o4)
+            updateHUD()
+        }
         
+    }
+    
+    func restartGame() {
+        obstacles.removeFromParentNode()
+        obstacles = SCNNode()
+        scene.rootNode.addChildNode(obstacles)
+        scene.isPaused=false
+        paused=false
     }
     
     func configureCommandsNotifications() {
@@ -288,6 +298,11 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheMiddle"), object: nil, queue: nil) { (notification) in
             didCrouchInTheMiddle()
         }
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("restartGame"), object: nil, queue: nil) { (notification) in
+            self.viewModel.gameOver = false
+            self.restartGame()
+        }
     }
     
     func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
@@ -297,16 +312,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
             //    contact.
         }
     }
-    
-    func initialObs(){
-        let o1=obs(pos: SCNVector3(roads.roadLeft.rawValue,7,-300), vel: SCNVector3(0,0,-150))
-        scene.rootNode.addChildNode(o1)
-        let o2=obs(pos: SCNVector3(roads.roadMiddle.rawValue,7,-500), vel: SCNVector3(0,0,-150))
-        scene.rootNode.addChildNode(o2)
-        let o3=obs(pos: SCNVector3(roads.roadRight.rawValue,7,-600), vel: SCNVector3(0,0,-150))
-        scene.rootNode.addChildNode(o3)
-        
-    }
+
     func obs(pos:SCNVector3,vel:SCNVector3)->SCNNode{
         
         var obstacle:SCNNode!
@@ -355,22 +361,13 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         labelNode.text = "score:\(score)"
         
     }
+    
     func gameOver()  {
-        var mes="your Score:\(score)"
         scene.isPaused=true
         paused=true
-    
-        let alertController = UIAlertController(title: "Game Over!", message: mes, preferredStyle: .alert)
-        
-        let OKAction = UIAlertAction(title: "Main Menu", style: .default) { (action) in self.dismiss(animated: true, completion: nil)}
-        let highScoreAction = UIAlertAction(title: "High Scores", style: .default) { (action) in
-            self.dismiss(animated: true, completion: {self.highScoreClosure()})
-            
-        }
-        alertController.addAction(OKAction)
-        alertController.addAction(highScoreAction)
         DispatchQueue.main.async {
-            self.present(alertController, animated: true) {}
+            self.viewModel.score = self.score
+            self.viewModel.gameOver = true
         }
         
     }
@@ -388,6 +385,11 @@ struct GameViewControllerRepresentable: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: GameViewController, context: Context) {
         
     }
+}
+
+enum obstacles: String, CaseIterable {
+    case stones = "stones"
+    case trap = "trap"
 }
 
 
