@@ -31,7 +31,7 @@ struct MenuView: View {
                         }
                     CardButtonView(iconName: "trophy.fill", buttonText: "Score")
                     CardButtonView(iconName: "storefront.fill", buttonText: "Shop")
-                    CardButtonView(iconName: "gearshape.fill", buttonText: "Settings")
+//                    CardButtonView(iconName: "gearshape.fill", buttonText: "Settings")
                 }
                 .padding(.bottom, 250)
             }

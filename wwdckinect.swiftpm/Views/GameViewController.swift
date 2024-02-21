@@ -20,6 +20,8 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     @ObservedObject var viewModel: GameViewModel = GameViewModel.getInstance()
     var scnView = SCNView()
     
+    var stones: [SCNNode] = [SCNNode]()
+    var traps: [SCNNode] = [SCNNode]()
     var cameraNode:SCNNode!
     var car: SCNNode!
     var roadLeft: SCNNode!
@@ -37,8 +39,6 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     var interval1: Double=2
     var score: Int = 0
     var paused = false
-    var isCarRunningAction = false
-    
     
     var highScoreClosure: () -> Void = {}
     
@@ -53,14 +53,21 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         cameraNode = scene.rootNode.childNode(withName: "camera", recursively: true)!
         
         car = scene.rootNode.childNode(withName: "car", recursively: true)!
-//        let carGeometry = SCNBox(width: CGFloat(1.3*car.simdScale.x), height: CGFloat(0.733*car.simdScale.y), length: CGFloat(2.56*car.simdScale.z), chamferRadius: 0.2)
-        car.physicsBody = SCNPhysicsBody(type: .dynamic, shape: SCNPhysicsShape(node: car))
-//        car.physicsBody?.isAffectedByGravity = true
-//        car.physicsBody?.collisionBitMask = 2
-        car.physicsBody?.categoryBitMask = 3
-        car.name = "car"
+        car.physicsBody?.type = .dynamic
+        car.physicsBody?.isAffectedByGravity = false
+//        car.physicsBody?.categoryBitMask = 3
+//        car.physicsBody?.isAffectedByGravity = false
         
+        var stone = scene.rootNode.childNode(withName: "stones", recursively: true)!
+        var trap = scene.rootNode.childNode(withName: "trap", recursively: true)!
         
+        for _ in 1...8 {
+            stones.append(stone.clone())
+        }
+        
+        for _ in 1...15 {
+            traps.append(trap.clone())
+        }
         
         roadLeft = scene.rootNode.childNode(withName: "road_left", recursively: true)!
         roadLeft.physicsBody = SCNPhysicsBody(type: .static, shape: SCNPhysicsShape(node: roadLeft))
@@ -73,6 +80,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         roadRight = scene.rootNode.childNode(withName: "road_right", recursively: true)!
         roadRight.physicsBody = SCNPhysicsBody(type: .static, shape: SCNPhysicsShape(node: roadRight))
         roadRight.physicsBody?.categoryBitMask = 1
+        
         scene.rootNode.addChildNode(obstacles)
         scene.physicsWorld.contactDelegate=self
         scnView.scene = scene
@@ -89,51 +97,57 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         timer = Timer.scheduledTimer(timeInterval: TimeInterval(interval1), target: self, selector: #selector(update4t(timer:)), userInfo: nil, repeats: true)
     }
  
-    func moveCar(direction: moveCarDirection) {
-        if (isCarRunningAction) {
+    func moveCar(direction: moveCarDirection, twoTimes: Bool = false) {
+        let carX = car.presentation.position.x.rounded()
+        let carY = car.presentation.position.y
+        print(carX)
+        print(carY)
+        if ((carX != -15 && carX != 0 && carX != 15) || carY > 5.5) {
             return
         }
         switch direction {
         case .right :
             if car.presentation.position.x.rounded() > -15 {
-                startActionCooldown(duration: 0.2)
-                car.runAction(SCNAction.moveBy(x: -15, y: 0, z: 0, duration: 0.2), completionHandler: nil)
+                
+                if (twoTimes) {
+//                    startActionCooldown(duration: 0.3)
+                    car.runAction(SCNAction.moveBy(x: -15, y: 0, z: 0, duration: 0.15), completionHandler: nil)
+                    car.runAction(SCNAction.moveBy(x: -15, y: 0, z: 0, duration: 0.15), completionHandler: nil)
+                }
+                else {
+                    car.runAction(SCNAction.moveBy(x: -15, y: 0, z: 0, duration: 0.2), completionHandler: nil)
+                }
                 
             }
         case .left :
             if car.presentation.position.x.rounded() < 15 {
-                startActionCooldown(duration: 0.2)
-                car.runAction(SCNAction.moveBy(x: 15, y: 0, z: 0, duration: 0.2), completionHandler: nil)
+                
+                if (twoTimes) {
+//                    startActionCooldown(duration: 0.3)
+                    car.runAction(SCNAction.moveBy(x: 15, y: 0, z: 0, duration: 0.15), completionHandler: nil)
+                    car.runAction(SCNAction.moveBy(x: 15, y: 0, z: 0, duration: 0.15), completionHandler: nil)
+                }
+                else {
+//                    startActionCooldown(duration: 0.2)
+                    car.runAction(SCNAction.moveBy(x: 15, y: 0, z: 0, duration: 0.2), completionHandler: nil)
+                }
                 
             }
         case .up :
             print(car.presentation.position.y)
             if car.presentation.position.y < 5.5 {
-                startActionCooldown(duration: 1)
+//                startActionCooldown(duration: 1)
                 let moveUp = SCNAction.moveBy(x: 0, y: 25, z: 0, duration: 0.5)
                 moveUp.timingMode = SCNActionTimingMode.easeOut;
-                print(car.presentation.position.y)
                 let moveDown = SCNAction.moveBy(x: 0, y: -25, z: 0, duration: 0.5)
                 moveDown.timingMode = SCNActionTimingMode.easeIn;
-                let moveSequence = SCNAction.sequence([moveUp,moveDown])
-                print(car.presentation.position.y)
+                let moveSequence = SCNAction.sequence([moveUp, moveDown])
                 car.runAction(moveSequence, completionHandler: nil)
                 
             }
             print("up")
-//        case UISwipeGestureRecognizer.Direction.down :
-//            print("down")
         }
         
-    }
-    
-    func startActionCooldown(duration: Double) {
-        isCarRunningAction = true
-        Timer.scheduledTimer(timeInterval: duration, target: self, selector: #selector(endActionCooldown), userInfo: nil, repeats: false)
-    }
-    
-    @objc func endActionCooldown() {
-        isCarRunningAction = false
     }
     
     override var shouldAutorotate: Bool {
@@ -155,9 +169,9 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     @objc func update4t(timer:Timer) -> Void {
         if !paused {
             gameTime += interval1
-//            let roadToSpawn = roads.allCases.randomElement()!
-//            let o4=obs(pos: SCNVector3(roadToSpawn.rawValue,7,-100), vel: SCNVector3(0,0,-150))
-//            obstacles.addChildNode(o4)
+            let roadToSpawn = roads.allCases.randomElement()!
+            let o4=obs(pos: SCNVector3(roadToSpawn.rawValue,7,-100), vel: SCNVector3(0,0,-150))
+            obstacles.addChildNode(o4)
             updateHUD()
         }
         
@@ -201,11 +215,9 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
             if (carX == roads.roadMiddle.rawValue) {
                 moveCar(direction: .left)
             }
-            else if (carX == roads.roadRight.rawValue) {
-                moveCar(direction: .left)
-                while (isCarRunningAction) {}
-                moveCar(direction: .left)
-            }
+//            else if (carX == roads.roadRight.rawValue) {
+//                moveCar(direction: .left, twoTimes: true)
+//            }
         }
         
         func didStandInTheRight() {
@@ -214,11 +226,9 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
             if (carX == roads.roadMiddle.rawValue) {
                 moveCar(direction: .right)
             }
-            else if (carX >= roads.roadLeft.rawValue) {
-                moveCar(direction: .right)
-                while (isCarRunningAction) {}
-                moveCar(direction: .right)
-            }
+//            else if (carX >= roads.roadLeft.rawValue) {
+//                moveCar(direction: .right, twoTimes: true)
+//            }
         }
         
         func didJumpInTheMiddle() {
@@ -252,6 +262,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         }
         
         NotificationCenter.default.addObserver(forName: Notification.Name("didPressRightArrowKey"), object: nil, queue: nil) { (notification) in
+            print("arrowKey")
             didPressRightArrowKey()
         }
         
@@ -312,17 +323,29 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
             //    contact.
         }
     }
+    
+    func rotLeft(a: [SCNNode], d: Int) -> [SCNNode] {
+        let slice1 = a[..<d]
+        let slice2 = a[d...]
+        return Array(slice2) + Array(slice1)
+    }
 
     func obs(pos:SCNVector3,vel:SCNVector3)->SCNNode{
-        
+        let chosenObs = Int.random(in: 1...3)
         var obstacle:SCNNode!
-        let geometry = SCNBox(width: 10.0, height: 5.0, length: 5.0, chamferRadius: 0.2)
-        obstacle = SCNNode( geometry : geometry)
+        if (chosenObs == 3) {
+            obstacle = stones.first
+            stones = rotLeft(a: stones, d: 1)
+        }
+        else {
+            obstacle = traps.first
+            traps = rotLeft(a: traps, d: 1)
+        }
         obstacle.physicsBody = SCNPhysicsBody.init(type: SCNPhysicsBodyType.dynamic, shape: nil)
         obstacle.physicsBody?.categoryBitMask = 2
         obstacle.physicsBody?.contactTestBitMask = 3
         obstacle.physicsBody?.isAffectedByGravity = false
-        obstacle.name="obstacle"
+//        obstacle.name="obstacle"
         obstacle.physicsBody?.friction = 0
         obstacle.physicsBody?.rollingFriction = 0
         obstacle.position=pos
@@ -331,6 +354,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         return obstacle
         
     }
+    
     func initHUD() {
         
         let skScene = SKScene(size: CGSize(width: 500, height: 100))
@@ -356,6 +380,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         hudNode.position = SCNVector3(x: 0.0, y: 40.0, z: 35.0)
         scene.rootNode.addChildNode(hudNode)
     }
+    
     func updateHUD() {
         score=Int(gameTime)/2
         labelNode.text = "score:\(score)"
@@ -387,7 +412,7 @@ struct GameViewControllerRepresentable: UIViewControllerRepresentable {
     }
 }
 
-enum obstacles: String, CaseIterable {
+enum ObstacleType: String, CaseIterable {
     case stones = "stones"
     case trap = "trap"
 }

@@ -39,6 +39,8 @@ struct VideoProcessingChain {
     /// Set this property to receive poses and action predictions.
     /// - Tag: delegate-VideoProcessingChain
     weak var delegate: VideoProcessingChainDelegate?
+    
+    var ciContext = CIContext(options: nil)
 
     /// The upstream frame publisher.
     ///
@@ -134,8 +136,6 @@ extension VideoProcessingChain {
             return nil
         }
 
-        // Create a Core Image context.
-        let ciContext = CIContext(options: nil)
 
         // Create a Core Image image from the sample buffer.
         let ciImage = CIImage(cvPixelBuffer: imageBuffer)

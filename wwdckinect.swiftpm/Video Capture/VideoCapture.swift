@@ -32,10 +32,21 @@ protocol VideoCaptureDelegate: AnyObject {
 class VideoCapture: NSObject {
     /// The video capture's delegate.
     var queue = DispatchQueue(label: "com.lucashflores.wwdckinect")
+    
+    var frames = 0
+    var frameLimit = 30
+    
+    override init() {
+        super.init()
+        
+        Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(restartFrames), userInfo: nil, repeats: true)
+    }
     /// Set this property to receive pose and action prediction notifications.
     weak var delegate: VideoCaptureDelegate! {
         didSet { createVideoFramePublisher() }
     }
+    
+    
 
     /// A Boolean that indicates whether to publish video frames.
     ///
@@ -119,7 +130,10 @@ class VideoCapture: NSObject {
 //            orientation = .portrait
 //        }
     }
-
+    @objc func restartFrames() {
+        frames = 0
+    }
+    
     private func enableCaptureSession() {
         if !captureSession.isRunning {
             DispatchQueue.global(qos: .background).async {
@@ -140,10 +154,11 @@ extension VideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
                        from connection: AVCaptureConnection) {
 
         // Forward the frame through the publisher.
-        let lock = UnfairLock()
-        lock.locked {
-            self.framePublisher?.send(frame)
-        }
+//        if (frames < frameLimit) {
+        self.framePublisher?.send(frame)
+//            frames += 1
+//        }
+        
     }
 }
 
@@ -196,7 +211,7 @@ extension VideoCapture {
 //        let modelFrameRate = ExerciseClassifier.frameRate
 
         let input = AVCaptureDeviceInput.createCameraInput(position: cameraPosition,
-                                                           frameRate: 30)
+                                                           frameRate: 20)
 
         let output = AVCaptureVideoDataOutput.withPixelFormatType(kCVPixelFormatType_32BGRA)
 
@@ -259,7 +274,7 @@ extension VideoCapture {
                 connection.preferredVideoStabilizationMode = .off
             }
         }
-
+        captureSession.sessionPreset = .medium
         // Discard newer frames if the app is busy with an earlier frame.
         output.alwaysDiscardsLateVideoFrames = true
 
