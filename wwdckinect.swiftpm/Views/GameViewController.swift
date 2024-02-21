@@ -20,13 +20,15 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     @ObservedObject var viewModel: GameViewModel = GameViewModel.getInstance()
     var scnView = SCNView()
     
-    var stones: [SCNNode] = [SCNNode]()
-    var traps: [SCNNode] = [SCNNode]()
+//    var stones: [SCNNode] = [SCNNode]()
+//    var traps: [SCNNode] = [SCNNode]()
     var cameraNode:SCNNode!
     var car: SCNNode!
     var roadLeft: SCNNode!
     var roadMiddle: SCNNode!
     var roadRight: SCNNode!
+    var trap: SCNNode!
+    var stones: SCNNode!
     var obstacles: SCNNode = SCNNode()
     var coins: SCNNode = SCNNode()
     var timer = Timer()
@@ -58,16 +60,16 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
 //        car.physicsBody?.categoryBitMask = 3
 //        car.physicsBody?.isAffectedByGravity = false
         
-        var stone = scene.rootNode.childNode(withName: "stones", recursively: true)!
-        var trap = scene.rootNode.childNode(withName: "trap", recursively: true)!
+        self.stones = scene.rootNode.childNode(withName: "stones", recursively: true)!
+        self.trap = scene.rootNode.childNode(withName: "trap", recursively: true)!
         
-        for _ in 1...8 {
-            stones.append(stone.clone())
-        }
-        
-        for _ in 1...15 {
-            traps.append(trap.clone())
-        }
+//        for _ in 1...8 {
+//            stones.append(stone.clone())
+//        }
+//        
+//        for _ in 1...15 {
+//            traps.append(trap.clone())
+//        }
         
         roadLeft = scene.rootNode.childNode(withName: "road_left", recursively: true)!
         roadLeft.physicsBody = SCNPhysicsBody(type: .static, shape: SCNPhysicsShape(node: roadLeft))
@@ -333,19 +335,22 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     func obs(pos:SCNVector3,vel:SCNVector3)->SCNNode{
         let chosenObs = Int.random(in: 1...3)
         var obstacle:SCNNode!
-        if (chosenObs == 3) {
-            obstacle = stones.first
-            stones = rotLeft(a: stones, d: 1)
-        }
-        else {
-            obstacle = traps.first
-            traps = rotLeft(a: traps, d: 1)
-        }
+//        if (chosenObs == 3) {
+//            obstacle = stones.first
+//            stones = rotLeft(a: stones, d: 1)
+//        }
+//        else {
+//            obstacle = traps.first
+//            traps = rotLeft(a: traps, d: 1)
+//        }
+//        let geometry = trap.geometry
+        let geometry = SCNBox(width: 10.0, height: 5.0, length: 5.0, chamferRadius: 0.2)
+        obstacle = SCNNode( geometry : geometry)
         obstacle.physicsBody = SCNPhysicsBody.init(type: SCNPhysicsBodyType.dynamic, shape: nil)
         obstacle.physicsBody?.categoryBitMask = 2
         obstacle.physicsBody?.contactTestBitMask = 3
         obstacle.physicsBody?.isAffectedByGravity = false
-//        obstacle.name="obstacle"
+        obstacle.name="obstacle"
         obstacle.physicsBody?.friction = 0
         obstacle.physicsBody?.rollingFriction = 0
         obstacle.position=pos
