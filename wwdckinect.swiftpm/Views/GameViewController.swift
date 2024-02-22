@@ -128,9 +128,9 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
                 self.isCarRunningAction = false
             }
         case .up :
-                let moveUp = SCNAction.moveBy(x: 0, y: 25, z: 0, duration: 0.5)
+                let moveUp = SCNAction.moveBy(x: 0, y: 22, z: 0, duration: 0.5)
                 moveUp.timingMode = SCNActionTimingMode.easeOut;
-                let moveDown = SCNAction.moveBy(x: 0, y: -25, z: 0, duration: 0.5)
+                let moveDown = SCNAction.moveBy(x: 0, y: -22, z: 0, duration: 0.5)
                 moveDown.timingMode = SCNActionTimingMode.easeIn;
                 let moveSequence = SCNAction.sequence([moveUp, moveDown])
                 car.runAction(moveSequence) {
@@ -162,7 +162,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         if !paused {
             gameTime += interval1
             let roadToSpawn = roads.allCases.randomElement()!
-            let o4=obs(pos: SCNVector3(roadToSpawn.rawValue,7,-100), vel: SCNVector3(0,0,-150))
+            let o4=obs(pos: SCNVector3(roadToSpawn.rawValue,5,-100), vel: SCNVector3(0,0,-150))
             obstacles.addChildNode(o4)
             updateHUD()
         }
@@ -284,17 +284,6 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
             didJumpInTheMiddle()
         }
         
-//        NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheLeft"), object: nil, queue: nil) { (notification) in
-//            didCrouchInTheLeft()
-//        }
-//        
-//        NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheRight"), object: nil, queue: nil) { (notification) in
-//            didCrouchInTheRight()
-//        }
-//        
-//        NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheMiddle"), object: nil, queue: nil) { (notification) in
-//            didCrouchInTheMiddle()
-//        }
         
         NotificationCenter.default.addObserver(forName: Notification.Name("restartGame"), object: nil, queue: nil) { (notification) in
             self.viewModel.gameOver = false
@@ -317,19 +306,10 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     }
 
     func obs(pos:SCNVector3,vel:SCNVector3)->SCNNode{
-        let chosenObs = Int.random(in: 1...3)
+        let chosenObs = Int.random(in: 1...10)
         var obstacle:SCNNode!
-//        if (chosenObs == 3) {
-//            obstacle = stones.first
-//            stones = rotLeft(a: stones, d: 1)
-//        }
-//        else {
-//            obstacle = traps.first
-//            traps = rotLeft(a: traps, d: 1)
-//        }
-//        let geometry = trap.geometry
-        let geometry = SCNBox(width: 10.0, height: 5.0, length: 5.0, chamferRadius: 0.2)
-        obstacle = SCNNode( geometry : geometry)
+
+        obstacle = self.stones.clone()
         obstacle.physicsBody = SCNPhysicsBody.init(type: SCNPhysicsBodyType.dynamic, shape: nil)
         obstacle.physicsBody?.categoryBitMask = 2
         obstacle.physicsBody?.contactTestBitMask = 3

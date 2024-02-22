@@ -58,9 +58,6 @@ class ActionClassifier {
         }
         
         if (neckJoint != nil) {
-//            if (bodyY <= 0.45) {
-//                action = "crouching"
-//            }
             if (bodyY <= 0.80) {
                 action = "standing"
             }
