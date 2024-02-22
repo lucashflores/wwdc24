@@ -41,6 +41,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     var interval1: Double=2
     var score: Int = 0
     var paused = false
+    var isCarRunningAction: Bool = false
     
     var highScoreClosure: () -> Void = {}
     
@@ -55,8 +56,12 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         cameraNode = scene.rootNode.childNode(withName: "camera", recursively: true)!
         
         car = scene.rootNode.childNode(withName: "car", recursively: true)!
+        car.physicsBody = SCNPhysicsBody(type: .dynamic, shape: SCNPhysicsShape(node: car))
         car.physicsBody?.type = .dynamic
+        car.physicsBody?.categoryBitMask = 3
+        car.physicsBody?.collisionBitMask = 0
         car.physicsBody?.isAffectedByGravity = false
+        
 //        car.physicsBody?.categoryBitMask = 3
 //        car.physicsBody?.isAffectedByGravity = false
         
@@ -99,56 +104,41 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         timer = Timer.scheduledTimer(timeInterval: TimeInterval(interval1), target: self, selector: #selector(update4t(timer:)), userInfo: nil, repeats: true)
     }
  
-    func moveCar(direction: moveCarDirection, twoTimes: Bool = false) {
+    func moveCar(move: CarMove, twoTimes: Bool = false) {
         let carX = car.presentation.position.x.rounded()
         let carY = car.presentation.position.y
+        let carZ = car.presentation.position.z
         print(carX)
         print(carY)
-        if ((carX != -15 && carX != 0 && carX != 15) || carY > 5.5) {
+        if isCarRunningAction {
             return
         }
-        switch direction {
-        case .right :
-            if car.presentation.position.x.rounded() > -15 {
-                
-                if (twoTimes) {
-//                    startActionCooldown(duration: 0.3)
-                    car.runAction(SCNAction.moveBy(x: -15, y: 0, z: 0, duration: 0.15), completionHandler: nil)
-                    car.runAction(SCNAction.moveBy(x: -15, y: 0, z: 0, duration: 0.15), completionHandler: nil)
-                }
-                else {
-                    car.runAction(SCNAction.moveBy(x: -15, y: 0, z: 0, duration: 0.2), completionHandler: nil)
-                }
-                
+        self.isCarRunningAction = true
+        switch move {
+        case .midRoad:
+            car.runAction(SCNAction.move(to: SCNVector3(x: 0, y: carY, z: carZ), duration: 0.2)) {
+                self.isCarRunningAction = false
             }
-        case .left :
-            if car.presentation.position.x.rounded() < 15 {
-                
-                if (twoTimes) {
-//                    startActionCooldown(duration: 0.3)
-                    car.runAction(SCNAction.moveBy(x: 15, y: 0, z: 0, duration: 0.15), completionHandler: nil)
-                    car.runAction(SCNAction.moveBy(x: 15, y: 0, z: 0, duration: 0.15), completionHandler: nil)
-                }
-                else {
-//                    startActionCooldown(duration: 0.2)
-                    car.runAction(SCNAction.moveBy(x: 15, y: 0, z: 0, duration: 0.2), completionHandler: nil)
-                }
-                
+        case .rightRoad:
+            car.runAction(SCNAction.move(to: SCNVector3(x: -15, y: carY, z: carZ), duration: 0.2)) {
+                self.isCarRunningAction = false
+            }
+        case .leftRoad:
+            car.runAction(SCNAction.move(to: SCNVector3(x: 15, y: carY, z: carZ), duration: 0.2)) {
+                self.isCarRunningAction = false
             }
         case .up :
-            print(car.presentation.position.y)
-            if car.presentation.position.y < 5.5 {
-//                startActionCooldown(duration: 1)
                 let moveUp = SCNAction.moveBy(x: 0, y: 25, z: 0, duration: 0.5)
                 moveUp.timingMode = SCNActionTimingMode.easeOut;
                 let moveDown = SCNAction.moveBy(x: 0, y: -25, z: 0, duration: 0.5)
                 moveDown.timingMode = SCNActionTimingMode.easeIn;
                 let moveSequence = SCNAction.sequence([moveUp, moveDown])
-                car.runAction(moveSequence, completionHandler: nil)
+                car.runAction(moveSequence) {
+                    self.isCarRunningAction = false
+                }
                 
-            }
-            print("up")
         }
+            print("up")
         
     }
     
@@ -183,85 +173,79 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         obstacles.removeFromParentNode()
         obstacles = SCNNode()
         scene.rootNode.addChildNode(obstacles)
+        moveCar(move: .midRoad)
+        self.score = 0
+        self.gameTime = 0
         scene.isPaused=false
         paused=false
     }
     
     func configureCommandsNotifications() {
         func didPressRightArrowKey() {
-            moveCar(direction: .right)
+            let carX = car.presentation.position.x.rounded()
+            if (carX == roads.roadLeft.rawValue) {
+                moveCar(move: .midRoad)
+            }
+            else {
+                moveCar(move: .rightRoad)
+            }
         }
         
         func didPressLeftArrowKey() {
-            moveCar(direction: .left)
+            let carX = car.presentation.position.x.rounded()
+            if (carX == roads.roadRight.rawValue) {
+                moveCar(move: .midRoad)
+            }
+            else {
+                moveCar(move: .leftRoad)
+            }
         }
         
         func didPressUpArrowKey() {
-            moveCar(direction: .up)
+            moveCar(move: .up)
         }
         
         func didStandInTheMiddle() {
-            let carX = car.presentation.position.x.rounded()
-            print(carX)
-            if (carX == roads.roadLeft.rawValue) {
-                moveCar(direction: .right)
-            }
-            else if (carX <= roads.roadRight.rawValue) {
-                moveCar(direction: .left)
-            }
+            moveCar(move: .midRoad)
         }
         
         func didStandInTheLeft() {
-            let carX = car.presentation.position.x.rounded()
-            print(carX)
-            if (carX == roads.roadMiddle.rawValue) {
-                moveCar(direction: .left)
-            }
-//            else if (carX == roads.roadRight.rawValue) {
-//                moveCar(direction: .left, twoTimes: true)
-//            }
+            moveCar(move: .leftRoad)
         }
         
         func didStandInTheRight() {
-            let carX = car.presentation.position.x.rounded()
-            print(carX)
-            if (carX == roads.roadMiddle.rawValue) {
-                moveCar(direction: .right)
-            }
-//            else if (carX >= roads.roadLeft.rawValue) {
-//                moveCar(direction: .right, twoTimes: true)
-//            }
+            moveCar(move: .rightRoad)
         }
         
         func didJumpInTheMiddle() {
-            didStandInTheMiddle()
-            moveCar(direction: .up)
+//            moveCar(move: .midRoad)
+            moveCar(move: .up)
         }
         
         func didJumpInTheLeft() {
-            didStandInTheLeft()
-            moveCar(direction: .up)
+//            moveCar(move: .leftRoad)
+            moveCar(move: .up)
         }
         
         func didJumpInTheRight() {
-            didStandInTheRight()
-            moveCar(direction: .up)
+//            moveCar(move: .rightRoad)
+            moveCar(move: .up)
         }
         
-        func didCrouchInTheMiddle() {
-            didStandInTheMiddle()
-            moveCar(direction: .up)
-        }
-        
-        func didCrouchInTheLeft() {
-            didStandInTheLeft()
-            moveCar(direction: .up)
-        }
-        
-        func didCrouchInTheRight() {
-            didStandInTheRight()
-            moveCar(direction: .up)
-        }
+//        func didCrouchInTheMiddle() {
+//            didStandInTheMiddle()
+//            moveCar(direction: .up)
+//        }
+//        
+//        func didCrouchInTheLeft() {
+//            didStandInTheLeft()
+//            moveCar(direction: .up)
+//        }
+//        
+//        func didCrouchInTheRight() {
+//            didStandInTheRight()
+//            moveCar(direction: .up)
+//        }
         
         NotificationCenter.default.addObserver(forName: Notification.Name("didPressRightArrowKey"), object: nil, queue: nil) { (notification) in
             print("arrowKey")
@@ -300,17 +284,17 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
             didJumpInTheMiddle()
         }
         
-        NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheLeft"), object: nil, queue: nil) { (notification) in
-            didCrouchInTheLeft()
-        }
-        
-        NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheRight"), object: nil, queue: nil) { (notification) in
-            didCrouchInTheRight()
-        }
-        
-        NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheMiddle"), object: nil, queue: nil) { (notification) in
-            didCrouchInTheMiddle()
-        }
+//        NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheLeft"), object: nil, queue: nil) { (notification) in
+//            didCrouchInTheLeft()
+//        }
+//        
+//        NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheRight"), object: nil, queue: nil) { (notification) in
+//            didCrouchInTheRight()
+//        }
+//        
+//        NotificationCenter.default.addObserver(forName: Notification.Name("didCrouchInTheMiddle"), object: nil, queue: nil) { (notification) in
+//            didCrouchInTheMiddle()
+//        }
         
         NotificationCenter.default.addObserver(forName: Notification.Name("restartGame"), object: nil, queue: nil) { (notification) in
             self.viewModel.gameOver = false
@@ -349,6 +333,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         obstacle.physicsBody = SCNPhysicsBody.init(type: SCNPhysicsBodyType.dynamic, shape: nil)
         obstacle.physicsBody?.categoryBitMask = 2
         obstacle.physicsBody?.contactTestBitMask = 3
+//        obstacle.physicsBody?.collisionBitMask = 3
         obstacle.physicsBody?.isAffectedByGravity = false
         obstacle.name="obstacle"
         obstacle.physicsBody?.friction = 0
@@ -429,8 +414,9 @@ enum roads: Float, CaseIterable {
     case roadRight = -15
 }
 
-enum moveCarDirection {
-    case right
-    case left
+enum CarMove {
+    case midRoad
+    case leftRoad
+    case rightRoad
     case up
 }

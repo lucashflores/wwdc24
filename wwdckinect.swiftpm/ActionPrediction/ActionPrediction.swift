@@ -14,25 +14,8 @@ struct ActionPrediction {
     /// The name of the action the Exercise Classifier predicted.
     let label: String
 
-    /// The Exercise Classifier's confidence in its prediction.
-    let confidence: Double!
-
-    /// A string that represents the confidence as percentage if applicable;
-    /// otherwise `nil`.
-    var confidenceString: String? {
-        guard let confidence = confidence else {
-            return nil
-        }
-
-        // Convert the confidence to a percentage based string.
-        let percent = confidence * 100
-        let formatString = percent >= 99.5 ? "%2.0f %%" : "%2.1f %%"
-        return String(format: formatString, percent)
-    }
-
-    init(label: String, confidence: Double) {
+    init(label: String) {
         self.label = label
-        self.confidence = confidence
     }
 }
 
@@ -60,18 +43,9 @@ extension ActionPrediction {
     /// Only the `lowConfidence()` and `noPerson()` type methods use this initializer.
     public init(_ otherLabel: AppLabel) {
         label = otherLabel.rawValue
-        confidence = nil
     }
 
-    /// A Boolean that indicates whether the label is from the action classifier model.
-    ///
-    /// isModelLabel and `isAppLabel` are mutually exclusive.
-    var isModelLabel: Bool { !isAppLabel }
-
-    /// A Boolean that indicates whether the label is from the app.
-    ///
-    /// `isAppLabel` and `isModelLabel` are mutually exclusive.
-    var isAppLabel: Bool { confidence == nil }
+    /// A Boolean that indicates whether the label is from the action classifier model
 }
 
 enum AppLabel: String {

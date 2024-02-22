@@ -10,7 +10,6 @@ import UIKit
 
 class CameraViewModel: ObservableObject {
     static var instance: CameraViewModel = CameraViewModel()
-    @Published var confidenceLabel = ""
     @Published var actionLabel = ""
     @Published var imageView: UIImage?
 

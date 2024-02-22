@@ -7,14 +7,18 @@
 
 import Foundation
 import Vision
+import SwiftUI
 
 class ActionClassifier {
     public static let shared = ActionClassifier()
+    @ObservedObject var gameViewModel: GameViewModel = GameViewModel.getInstance()
     typealias JointName = VNHumanBodyPoseObservation.JointName
     
     func predictActionFromPose(_ pose: Pose?) -> ActionPrediction {
 
         guard let pose = pose else { return ActionPrediction(.noPerson) }
+        let leftWristJoint = pose.landmarks.first(where: { $0.name == JointName.leftWrist })
+        let rightWristJoint = pose.landmarks.first(where: { $0.name == JointName.rightWrist })
         let neckJoint = pose.landmarks.first(where: { $0.name == JointName.neck })
         let leftHipJoint = pose.landmarks.first(where: { $0.name == JointName.leftHip })
         let rightHipJoint = pose.landmarks.first(where: { $0.name == JointName.rightHip })
@@ -31,6 +35,14 @@ class ActionClassifier {
         }
         else {
             return ActionPrediction(.noPerson)
+        }
+        
+        if (self.gameViewModel.gameOver && (leftWristJoint?.location.y ?? -1)  > bodyY) {
+            return ActionPrediction(label: "raising_right_hand")
+        }
+        
+        if (self.gameViewModel.gameOver && (rightWristJoint?.location.y ?? -1)  > bodyY) {
+            return ActionPrediction(label: "raising_left_hand")
         }
         
         var position: String
@@ -59,6 +71,6 @@ class ActionClassifier {
         else {
             action = "jumping"
         }
-        return ActionPrediction(label: "\(action)_\(position)", confidence: 100)
+        return ActionPrediction(label: "\(action)_\(position)")
     }
 }

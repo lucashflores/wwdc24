@@ -9,7 +9,7 @@ import SwiftUI
 
 struct GameOverView: View {
     @Binding var currentScreen: Screen
-    var score: Int
+    @Binding var score: Int
     
     var body: some View {
         VStack(spacing: 80) {
@@ -25,22 +25,49 @@ struct GameOverView: View {
             HStack(spacing: 80) {
                 CardButtonView(iconName: "arrow.left", buttonText: "Main Menu")
                     .onTapGesture {
-                        NotificationCenter.default.post(name: Notification.Name("restartGame"), object: nil, userInfo: nil)
-                        currentScreen = .menu
+                        mainMenu()
                     }
                 CardButtonView(iconName: "arrow.circlepath", buttonText: "Play Again")
                     .onTapGesture {
-                        NotificationCenter.default.post(name: Notification.Name("restartGame"), object: nil, userInfo: nil)
+                        notifyGameRestart()
                     }
             }
             
-            Text("Stand left if you want to go back to main menu or stand right if you want to play again")
-                .font(.system(size: 40))
-                .foregroundStyle(.white)
+            VStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/, spacing: 0){
+                Text("Raise your left hand to the height of your neck if you")
+                    .font(.system(size: 40))
+                    .foregroundStyle(.white)
+                Text("want to go back to menu or your right one to play again")
+                    .font(.system(size: 40))
+                    .foregroundStyle(.white)
+            }
+            .padding()
+            .background {
+                Color.black.opacity(0.5)
+            }
         }
+        .onAppear {
+            NotificationCenter.default.addObserver(forName: Notification.Name("didRaiseLeftHand"), object: nil, queue: nil) { (notification) in
+                mainMenu()
+            }
+            
+            NotificationCenter.default.addObserver(forName: Notification.Name("didRaiseRightHand"), object: nil, queue: nil) { (notification) in
+                notifyGameRestart()
+            }
+        }
+    }
+    
+    
+    func notifyGameRestart() {
+        NotificationCenter.default.post(name: Notification.Name("restartGame"), object: nil, userInfo: nil)
+    }
+    
+    func mainMenu() {
+        notifyGameRestart()
+        currentScreen = .menu
     }
 }
 
 #Preview {
-    GameOverView(currentScreen: .constant(.game), score: 100)
+    GameOverView(currentScreen: .constant(.game), score: .constant(100))
 }

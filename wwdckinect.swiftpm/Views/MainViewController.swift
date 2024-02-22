@@ -15,7 +15,6 @@ import SpriteKit
 @available(iOS 14.0, *)
 class MainViewController: UIViewController {
     @ObservedObject var cameraViewModel: CameraViewModel = CameraViewModel.getInstance()
-    @ObservedObject var gameViewModel: GameViewModel = GameViewModel.getInstance()
     
     var queue = DispatchQueue(label: "com.lucashflores.wwdckinect", attributes: .concurrent)
 
@@ -75,11 +74,6 @@ extension MainViewController: VideoProcessingChainDelegate {
     func videoProcessingChain(_ chain: VideoProcessingChain,
                               didPredict actionPrediction: ActionPrediction,
                               for frameCount: Int) {
-
-        if actionPrediction.isModelLabel {
-            addFrameCount(frameCount, to: actionPrediction.label)
-        }
-        
         updateUILabelsWithPrediction(actionPrediction)
     }
 
@@ -118,19 +112,20 @@ extension MainViewController {
                     NotificationCenter.default.post(name: Notification.Name("didJumpInTheLeft"), object: nil, userInfo: nil)
                 case "jumping_right":
                     NotificationCenter.default.post(name: Notification.Name("didJumpInTheRight"), object: nil, userInfo: nil)
-                case "crouching_middle":
-                    NotificationCenter.default.post(name: Notification.Name("didCrouchInTheMiddle"), object: nil, userInfo: nil)
-                case "crouching_left":
-                    NotificationCenter.default.post(name: Notification.Name("didCrouchInTheLeft"), object: nil, userInfo: nil)
-                case "crouching_right":
-                    NotificationCenter.default.post(name: Notification.Name("didCrouchInTheRight"), object: nil, userInfo: nil)
+                case "raising_left_hand":
+                    NotificationCenter.default.post(name: Notification.Name("didRaiseLeftHand"), object: nil, userInfo: nil)
+                case "raising_right_hand":
+                    NotificationCenter.default.post(name: Notification.Name("didRaiseRightHand"), object: nil, userInfo: nil)
+//                case "crouching_middle":
+//                    NotificationCenter.default.post(name: Notification.Name("didCrouchInTheMiddle"), object: nil, userInfo: nil)
+//                case "crouching_left":
+//                    NotificationCenter.default.post(name: Notification.Name("didCrouchInTheLeft"), object: nil, userInfo: nil)
+//                case "crouching_right":
+//                    NotificationCenter.default.post(name: Notification.Name("didCrouchInTheRight"), object: nil, userInfo: nil)
                 default:
                     ()
             }
         }
-        
-        let confidenceString = prediction.confidenceString ?? "Observing..."
-        DispatchQueue.main.async { self.cameraViewModel.confidenceLabel = confidenceString }
     }
 
     private func drawPoses(_ poses: [Pose]?, onto frame: CGImage) {

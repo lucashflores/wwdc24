@@ -26,8 +26,6 @@ struct GameView: View {
                     VStack {
                         Text(self.cameraViewModel.actionLabel)
                             .font(.system(size: 60))
-                        Text(self.cameraViewModel.confidenceLabel)
-                            .font(.system(size: 36))
                     }
                     .frame(maxWidth: 600)
                     .background {
@@ -37,7 +35,7 @@ struct GameView: View {
             }
             
             if (gameViewModel.gameOver) {
-                GameOverView(currentScreen: $currentScreen, score: gameViewModel.score)
+                GameOverView(currentScreen: $currentScreen, score: $gameViewModel.score)
             }
         }
         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
