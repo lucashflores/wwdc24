@@ -20,8 +20,7 @@ struct GameView: View {
                 }
                 .padding()
                 Spacer()
-            }
-            
+            }            
             
             ZStack(alignment: .bottomTrailing) {
                 MainViewControllerRepresentable()
@@ -48,7 +47,7 @@ struct GameView: View {
             }
             
             if (gameViewModel.gameOver) {
-                GameOverView(currentScreen: $currentScreen, score: $gameViewModel.score)
+                GameOverView(currentScreen: $currentScreen, score: $gameViewModel.score, coins: $gameViewModel.coins)
             }
         }
         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)

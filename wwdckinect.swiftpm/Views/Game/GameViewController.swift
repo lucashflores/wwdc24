@@ -34,8 +34,6 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     var paused = false
     var isCarRunningAction: Bool = false
     
-    var highScoreClosure: () -> Void = {}
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         configureCommandsNotifications()
@@ -88,8 +86,6 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         let carX = car.presentation.position.x.rounded()
         let carY = car.presentation.position.y
         let carZ = car.presentation.position.z
-        print(carX)
-        print(carY)
         if isCarRunningAction {
             return
         }
@@ -108,17 +104,15 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
                 self.isCarRunningAction = false
             }
         case .up :
-                let moveUp = SCNAction.moveBy(x: 0, y: 22, z: 0, duration: 0.5)
-                moveUp.timingMode = SCNActionTimingMode.easeOut;
-                let moveDown = SCNAction.moveBy(x: 0, y: -22, z: 0, duration: 0.5)
-                moveDown.timingMode = SCNActionTimingMode.easeIn;
-                let moveSequence = SCNAction.sequence([moveUp, moveDown])
-                car.runAction(moveSequence) {
-                    self.isCarRunningAction = false
-                }
-                
+            let moveUp = SCNAction.moveBy(x: 0, y: 22, z: 0, duration: 0.5)
+            moveUp.timingMode = SCNActionTimingMode.easeOut;
+            let moveDown = SCNAction.moveBy(x: 0, y: -22, z: 0, duration: 0.5)
+            moveDown.timingMode = SCNActionTimingMode.easeIn;
+            let moveSequence = SCNAction.sequence([moveUp, moveDown])
+            car.runAction(moveSequence) {
+                self.isCarRunningAction = false
+            }
         }
-            print("up")
         
     }
     
@@ -314,7 +308,6 @@ extension GameViewController {
         
         
         NotificationCenter.default.addObserver(forName: Notification.Name("didPressRightArrowKey"), object: nil, queue: nil) { (notification) in
-            print("arrowKey")
             didPressRightArrowKey()
         }
         

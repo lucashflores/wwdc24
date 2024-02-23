@@ -10,6 +10,7 @@ import SwiftUI
 struct GameOverView: View {
     @Binding var currentScreen: Screen
     @Binding var score: Int
+    @Binding var coins: Int
     
     var body: some View {
         VStack(spacing: 80) {
@@ -18,7 +19,10 @@ struct GameOverView: View {
                     .font(.system(size: 80, weight: .bold))
                     .foregroundStyle(.white)
                 Text("Your score is: \(score)")
-                    .font(.system(size: 60))
+                    .font(.system(size: 50))
+                    .foregroundStyle(.white)
+                Text("Your collected \(coins) coins")
+                    .font(.system(size: 50))
                     .foregroundStyle(.white)
             }
             
@@ -33,7 +37,7 @@ struct GameOverView: View {
                     }
             }
             
-            VStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/, spacing: 0){
+            VStack(alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/, spacing: 0) {
                 Text("Raise your left hand to the height of your neck if you")
                     .font(.system(size: 40))
                     .foregroundStyle(.white)
@@ -69,5 +73,5 @@ struct GameOverView: View {
 }
 
 #Preview {
-    GameOverView(currentScreen: .constant(.game), score: .constant(100))
+    GameOverView(currentScreen: .constant(.game), score: .constant(100), coins: .constant(50))
 }
