@@ -16,30 +16,21 @@ import CoreData
 import SwiftUI
 
 class GameViewController: UIViewController, SCNPhysicsContactDelegate {
-//    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     @ObservedObject var viewModel: GameViewModel = GameViewModel.getInstance()
     var scnView = SCNView()
-    
-//    var stones: [SCNNode] = [SCNNode]()
-//    var traps: [SCNNode] = [SCNNode]()
     var cameraNode:SCNNode!
     var car: SCNNode!
     var roadLeft: SCNNode!
     var roadMiddle: SCNNode!
     var roadRight: SCNNode!
     var trap: SCNNode!
+    var coin: SCNNode!
+    var tree: SCNNode!
     var stones: SCNNode!
-    var obstacles: SCNNode = SCNNode()
-    var coins: SCNNode = SCNNode()
+    var items: SCNNode = SCNNode()
     var timer = Timer()
-    var gameTime: Double = 0
-    var obstacle1: SCNNode!
     var scene: SCNScene!
-    
-    var hudNode: SCNNode!
-    var labelNode: SKLabelNode!
-    var interval1: Double=2
-    var score: Int = 0
+    var interval1: Double = 2
     var paused = false
     var isCarRunningAction: Bool = false
     
@@ -62,20 +53,11 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         car.physicsBody?.collisionBitMask = 0
         car.physicsBody?.isAffectedByGravity = false
         
-//        car.physicsBody?.categoryBitMask = 3
-//        car.physicsBody?.isAffectedByGravity = false
-        
         self.stones = scene.rootNode.childNode(withName: "stones", recursively: true)!
         self.trap = scene.rootNode.childNode(withName: "trap", recursively: true)!
-        
-//        for _ in 1...8 {
-//            stones.append(stone.clone())
-//        }
-//        
-//        for _ in 1...15 {
-//            traps.append(trap.clone())
-//        }
-        
+        self.coin = scene.rootNode.childNode(withName: "coin", recursively: true)!
+        self.tree = scene.rootNode.childNode(withName: "tree", recursively: true)!
+    
         roadLeft = scene.rootNode.childNode(withName: "road_left", recursively: true)!
         roadLeft.physicsBody = SCNPhysicsBody(type: .static, shape: SCNPhysicsShape(node: roadLeft))
         roadLeft.physicsBody?.categoryBitMask = 1
@@ -88,15 +70,13 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         roadRight.physicsBody = SCNPhysicsBody(type: .static, shape: SCNPhysicsShape(node: roadRight))
         roadRight.physicsBody?.categoryBitMask = 1
         
-        scene.rootNode.addChildNode(obstacles)
+        scene.background.contents = [UIImage(named: "Right.bmp")!, UIImage(named: "Left.bmp")!, UIImage(named: "Top.bmp")!, UIImage(named: "Bottom.bmp")!, UIImage(named: "Back.bmp")!, UIImage(named: "Front.bmp")!];
+        scene.rootNode.addChildNode(items)
         scene.physicsWorld.contactDelegate=self
         scnView.scene = scene
         scnView.showsStatistics = true
         scnView.pointOfView?.camera?.zFar = 700
         scnView.backgroundColor = UIColor.black
-        initHUD()
-        updateHUD()
-        
         view.addSubview(scnView)
     }
     
@@ -160,26 +140,129 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     
     @objc func update4t(timer:Timer) -> Void {
         if !paused {
-            gameTime += interval1
+            DispatchQueue.main.async {
+                self.viewModel.score += 1
+            }
+            items.childNodes.forEach {node in
+                if (node.presentation.position.z < -900) {
+                    node.removeFromParentNode()
+                }
+            }
+            let itemToSpawn = Int.random(in: 1...10)
             let roadToSpawn = roads.allCases.randomElement()!
-            let o4=obs(pos: SCNVector3(roadToSpawn.rawValue,5,-100), vel: SCNVector3(0,0,-150))
-            obstacles.addChildNode(o4)
-            updateHUD()
+            let pos: SCNVector3 = SCNVector3(roadToSpawn.rawValue,5,-200)
+            let vel: SCNVector3 = SCNVector3(0,0,-150)
+            let item: SCNNode
+            if (itemToSpawn <= 1) {
+                item = coin(pos: pos, vel: vel)
+            }
+            else if (itemToSpawn <= 4) {
+                item = obs(pos: pos, vel: vel, type: .stones)
+            }
+            else {
+                item = obs(pos: pos, vel: vel, type: .trap  )
+            }
+            items.addChildNode(item)
         }
         
     }
     
     func restartGame() {
-        obstacles.removeFromParentNode()
-        obstacles = SCNNode()
-        scene.rootNode.addChildNode(obstacles)
+        items.removeFromParentNode()
+        items = SCNNode()
+        scene.rootNode.addChildNode(items)
         moveCar(move: .midRoad)
-        self.score = 0
-        self.gameTime = 0
+        self.viewModel.score = 0
         scene.isPaused=false
         paused=false
     }
     
+    
+    
+    func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
+        if contact.nodeB.name == "obstacle" && contact.nodeA.name == "car" {
+            print("game over",contact.nodeA.name!,contact.nodeB.name!)
+            gameOver()
+        }
+        else if contact.nodeB.name == "spawnedCoin" && contact.nodeA.name == "car" {
+            contact.nodeB.removeFromParentNode()
+            DispatchQueue.main.async {
+                self.viewModel.coins += 1
+            }
+        }
+    }
+    
+    func rotLeft(a: [SCNNode], d: Int) -> [SCNNode] {
+        let slice1 = a[..<d]
+        let slice2 = a[d...]
+        return Array(slice2) + Array(slice1)
+    }
+    
+    func spawnTreesBatch() {
+        
+    }
+    
+    func tree(pos: SCNVector3, vel: SCNVector3) -> SCNNode {
+        let newTree: SCNNode = self.coin.clone()
+        newTree.physicsBody = SCNPhysicsBody.init(type: SCNPhysicsBodyType.dynamic, shape: nil)
+        newTree.physicsBody?.categoryBitMask = 2
+        newTree.physicsBody?.contactTestBitMask = 3
+        newTree.physicsBody?.isAffectedByGravity = false
+        newTree.name = "spawnedTree"
+        newTree.physicsBody?.friction = 0
+        newTree.physicsBody?.rollingFriction = 0
+        newTree.position = pos
+        newTree.physicsBody?.velocity = vel
+        return newTree
+    }
+    
+    func coin(pos: SCNVector3, vel: SCNVector3) -> SCNNode {
+        let newCoin: SCNNode = self.coin.clone()
+        newCoin.physicsBody = SCNPhysicsBody.init(type: SCNPhysicsBodyType.dynamic, shape: nil)
+        newCoin.physicsBody?.categoryBitMask = 2
+        newCoin.physicsBody?.contactTestBitMask = 3
+        newCoin.physicsBody?.isAffectedByGravity = false
+        newCoin.name="spawnedCoin"
+        newCoin.physicsBody?.friction = 0
+        newCoin.physicsBody?.rollingFriction = 0
+        newCoin.position=pos
+        newCoin.physicsBody?.velocity = vel
+        return newCoin
+    }
+
+    func obs(pos: SCNVector3, vel: SCNVector3, type: ObstacleType)->SCNNode{
+        var obstacle: SCNNode!
+        if (type == .stones) {
+            obstacle = self.stones.clone()
+        }
+        else if (type == .trap) {
+            obstacle = self.trap.clone()
+        }
+        obstacle.physicsBody = SCNPhysicsBody.init(type: SCNPhysicsBodyType.dynamic, shape: nil)
+        obstacle.physicsBody?.categoryBitMask = 2
+        obstacle.physicsBody?.contactTestBitMask = 3
+        obstacle.physicsBody?.isAffectedByGravity = false
+        obstacle.name="obstacle"
+        obstacle.physicsBody?.friction = 0
+        obstacle.physicsBody?.rollingFriction = 0
+        obstacle.position=pos
+        obstacle.physicsBody?.velocity = vel
+        
+        return obstacle
+        
+    }
+    
+    func gameOver()  {
+        scene.isPaused=true
+        paused=true
+        DispatchQueue.main.async {
+            self.viewModel.gameOver = true
+        }
+        
+    }
+}
+
+extension GameViewController {
     func configureCommandsNotifications() {
         func didPressRightArrowKey() {
             let carX = car.presentation.position.x.rounded()
@@ -218,34 +301,17 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         }
         
         func didJumpInTheMiddle() {
-//            moveCar(move: .midRoad)
             moveCar(move: .up)
         }
         
         func didJumpInTheLeft() {
-//            moveCar(move: .leftRoad)
             moveCar(move: .up)
         }
         
         func didJumpInTheRight() {
-//            moveCar(move: .rightRoad)
             moveCar(move: .up)
         }
         
-//        func didCrouchInTheMiddle() {
-//            didStandInTheMiddle()
-//            moveCar(direction: .up)
-//        }
-//        
-//        func didCrouchInTheLeft() {
-//            didStandInTheLeft()
-//            moveCar(direction: .up)
-//        }
-//        
-//        func didCrouchInTheRight() {
-//            didStandInTheRight()
-//            moveCar(direction: .up)
-//        }
         
         NotificationCenter.default.addObserver(forName: Notification.Name("didPressRightArrowKey"), object: nil, queue: nil) { (notification) in
             print("arrowKey")
@@ -289,82 +355,6 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
             self.viewModel.gameOver = false
             self.restartGame()
         }
-    }
-    
-    func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
-        if contact.nodeB.name == "obstacle" && contact.nodeA.name == "car" {
-            print("game over",contact.nodeA.name!,contact.nodeB.name!)
-            gameOver()
-            //    contact.
-        }
-    }
-    
-    func rotLeft(a: [SCNNode], d: Int) -> [SCNNode] {
-        let slice1 = a[..<d]
-        let slice2 = a[d...]
-        return Array(slice2) + Array(slice1)
-    }
-
-    func obs(pos:SCNVector3,vel:SCNVector3)->SCNNode{
-        let chosenObs = Int.random(in: 1...10)
-        var obstacle:SCNNode!
-
-        obstacle = self.stones.clone()
-        obstacle.physicsBody = SCNPhysicsBody.init(type: SCNPhysicsBodyType.dynamic, shape: nil)
-        obstacle.physicsBody?.categoryBitMask = 2
-        obstacle.physicsBody?.contactTestBitMask = 3
-//        obstacle.physicsBody?.collisionBitMask = 3
-        obstacle.physicsBody?.isAffectedByGravity = false
-        obstacle.name="obstacle"
-        obstacle.physicsBody?.friction = 0
-        obstacle.physicsBody?.rollingFriction = 0
-        obstacle.position=pos
-        obstacle.physicsBody?.velocity = vel
-        
-        return obstacle
-        
-    }
-    
-    func initHUD() {
-        
-        let skScene = SKScene(size: CGSize(width: 500, height: 100))
-        skScene.backgroundColor = UIColor(white: 0.0, alpha: 0.0)
-        
-        labelNode = SKLabelNode(fontNamed: "Menlo-Bold")
-        labelNode.fontSize = 48
-        labelNode.position.y = 50
-        labelNode.position.x = 250
-        
-        skScene.addChild(labelNode)
-        
-        let plane = SCNPlane(width: 5, height: 1)
-        let material = SCNMaterial()
-        material.lightingModel = SCNMaterial.LightingModel.constant
-        material.isDoubleSided = true
-        material.diffuse.contents = skScene
-        plane.materials = [material]
-        
-        hudNode = SCNNode(geometry: plane)
-        hudNode.name = "HUD"
-        hudNode.rotation = SCNVector4(x: 1, y: 0, z: 0, w: 3.14159265)
-        hudNode.position = SCNVector3(x: 0.0, y: 40.0, z: 35.0)
-        scene.rootNode.addChildNode(hudNode)
-    }
-    
-    func updateHUD() {
-        score=Int(gameTime)/2
-        labelNode.text = "score:\(score)"
-        
-    }
-    
-    func gameOver()  {
-        scene.isPaused=true
-        paused=true
-        DispatchQueue.main.async {
-            self.viewModel.score = self.score
-            self.viewModel.gameOver = true
-        }
-        
     }
 }
 

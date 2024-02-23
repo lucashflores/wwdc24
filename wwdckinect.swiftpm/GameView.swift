@@ -10,6 +10,19 @@ struct GameView: View {
         ZStack {
             GameViewControllerRepresentable()
             
+            VStack {
+                HStack {
+                    Spacer()
+                    Text("Coins: \(gameViewModel.coins)")
+                        .font(.system(size: 25, weight: .bold))
+                    Text("Score: \(gameViewModel.score)")
+                        .font(.system(size: 25, weight: .bold))
+                }
+                .padding()
+                Spacer()
+            }
+            
+            
             ZStack(alignment: .bottomTrailing) {
                 MainViewControllerRepresentable()
                 if let camera = self.cameraViewModel.imageView {
