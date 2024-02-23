@@ -83,7 +83,6 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     }
  
     func moveCar(move: CarMove, twoTimes: Bool = false) {
-        let carX = car.presentation.position.x.rounded()
         let carY = car.presentation.position.y
         let carZ = car.presentation.position.z
         if isCarRunningAction {
@@ -142,6 +141,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
                     node.removeFromParentNode()
                 }
             }
+            spawnTreesBatch()
             let itemToSpawn = Int.random(in: 1...10)
             let roadToSpawn = roads.allCases.randomElement()!
             let pos: SCNVector3 = SCNVector3(roadToSpawn.rawValue,5,-200)
@@ -193,11 +193,29 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     }
     
     func spawnTreesBatch() {
+        let leftFieldRange: ClosedRange<Float> = 40 ... 80
+        let rightFieldRange: ClosedRange<Float> = -80 ... -40
+        let spawnRange: ClosedRange<Float> = -220 ... -120
+        let vel: SCNVector3 = SCNVector3(0,0,-150)
+        var treesToSpawn: [SCNNode] = [SCNNode]()
+    
+        for _ in 1...2 {
+            let newTree = tree(pos: SCNVector3(x: Float.random(in: leftFieldRange), y: 3.5, z: Float.random(in: spawnRange)), vel: vel)
+            treesToSpawn.append(newTree)
+        }
         
+        for _ in 1...2 {
+            let newTree = tree(pos: SCNVector3(x: Float.random(in: rightFieldRange), y: 3.5, z: Float.random(in: spawnRange)), vel: vel)
+            treesToSpawn.append(newTree)
+        }
+        
+        for tree in treesToSpawn {
+            self.items.addChildNode(tree)
+        }
     }
     
     func tree(pos: SCNVector3, vel: SCNVector3) -> SCNNode {
-        let newTree: SCNNode = self.coin.clone()
+        let newTree: SCNNode = self.tree.clone()
         newTree.physicsBody = SCNPhysicsBody.init(type: SCNPhysicsBodyType.dynamic, shape: nil)
         newTree.physicsBody?.categoryBitMask = 2
         newTree.physicsBody?.contactTestBitMask = 3
@@ -216,10 +234,10 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         newCoin.physicsBody?.categoryBitMask = 2
         newCoin.physicsBody?.contactTestBitMask = 3
         newCoin.physicsBody?.isAffectedByGravity = false
-        newCoin.name="spawnedCoin"
+        newCoin.name = "spawnedCoin"
         newCoin.physicsBody?.friction = 0
         newCoin.physicsBody?.rollingFriction = 0
-        newCoin.position=pos
+        newCoin.position = pos
         newCoin.physicsBody?.velocity = vel
         return newCoin
     }

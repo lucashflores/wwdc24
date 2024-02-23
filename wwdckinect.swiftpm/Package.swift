@@ -16,8 +16,6 @@ let package = Package(
         .iOSApplication(
             name: "WWDCKinect",
             targets: ["AppModule"],
-            bundleIdentifier: "com.lucashflores.wwdckinect",
-            teamIdentifier: "7P886DJU8X",
             displayVersion: "1.0",
             bundleVersion: "1",
             appIcon: .placeholder(icon: .lightningBolt),
@@ -31,9 +29,6 @@ let package = Package(
                 .landscapeRight,
                 .landscapeLeft,
                 .portraitUpsideDown(.when(deviceFamilies: [.pad]))
-            ],
-            capabilities: [
-                .camera(purposeString: "Quero camera")
             ]
         )
     ],
