@@ -274,8 +274,9 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     }
     
     func gameOver()  {
-        scene.isPaused=true
-        paused=true
+        isCarRunningAction = false
+        scene.isPaused = true
+        paused = true
         DispatchQueue.main.async {
             self.viewModel.gameOver = true
         }
@@ -346,30 +347,24 @@ extension GameViewController {
             didPressUpArrowKey()
         }
         
-        NotificationCenter.default.addObserver(forName: Notification.Name("didStandInTheLeft"), object: nil, queue: nil) { (notification) in
-            didStandInTheLeft()
+        NotificationCenter.default.addObserver(forName: Notification.Name("action_detected"), object: nil, queue: nil) { (notification) in
+            switch notification.object as! String {
+                case "standing_middle":
+                    didStandInTheMiddle()
+                case "standing_left":
+                    didStandInTheLeft()
+                case "standing_right":
+                    didStandInTheRight()
+                case "jumping_middle":
+                    didJumpInTheMiddle()
+                case "jumping_left":
+                    didJumpInTheLeft()
+                case "jumping_right":
+                    didJumpInTheRight()
+                default:
+                    ()
+            }
         }
-        
-        NotificationCenter.default.addObserver(forName: Notification.Name("didStandInTheRight"), object: nil, queue: nil) { (notification) in
-            didStandInTheRight()
-        }
-        
-        NotificationCenter.default.addObserver(forName: Notification.Name("didStandInTheMiddle"), object: nil, queue: nil) { (notification) in
-            didStandInTheMiddle()
-        }
-        
-        NotificationCenter.default.addObserver(forName: Notification.Name("didJumpInTheLeft"), object: nil, queue: nil) { (notification) in
-            didJumpInTheLeft()
-        }
-        
-        NotificationCenter.default.addObserver(forName: Notification.Name("didJumpInTheRight"), object: nil, queue: nil) { (notification) in
-            didJumpInTheRight()
-        }
-        
-        NotificationCenter.default.addObserver(forName: Notification.Name("didJumpInTheMiddle"), object: nil, queue: nil) { (notification) in
-            didJumpInTheMiddle()
-        }
-        
         
         NotificationCenter.default.addObserver(forName: Notification.Name("restartGame"), object: nil, queue: nil) { (notification) in
             self.viewModel.gameOver = false

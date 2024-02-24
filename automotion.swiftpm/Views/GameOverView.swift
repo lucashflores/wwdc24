@@ -51,12 +51,14 @@ struct GameOverView: View {
             }
         }
         .onAppear {
-            NotificationCenter.default.addObserver(forName: Notification.Name("didRaiseLeftHand"), object: nil, queue: nil) { (notification) in
-                mainMenu()
-            }
-            
-            NotificationCenter.default.addObserver(forName: Notification.Name("didRaiseRightHand"), object: nil, queue: nil) { (notification) in
-                notifyGameRestart()
+            NotificationCenter.default.addObserver(forName: Notification.Name("action_detected"), object: nil, queue: nil) { (notification) in
+                let action = notification.object as! String
+                if (action == "raising_right_hand") {
+                    notifyGameRestart()
+                }
+                else if (action == "raising_left_hand") {
+                    mainMenu()
+                }
             }
         }
     }

@@ -101,26 +101,7 @@ extension MainViewController {
         DispatchQueue.main.async {
             let label = prediction.label
             self.cameraViewModel.actionLabel = label
-            switch label {
-                case "standing_middle":
-                    NotificationCenter.default.post(name: Notification.Name("didStandInTheMiddle"), object: nil, userInfo: nil)
-                case "standing_left":
-                    NotificationCenter.default.post(name: Notification.Name("didStandInTheLeft"), object: nil, userInfo: nil)
-                case "standing_right":
-                    NotificationCenter.default.post(name: Notification.Name("didStandInTheRight"), object: nil, userInfo: nil)
-                case "jumping_middle":
-                    NotificationCenter.default.post(name: Notification.Name("didJumpInTheMiddle"), object: nil, userInfo: nil)
-                case "jumping_left":
-                    NotificationCenter.default.post(name: Notification.Name("didJumpInTheLeft"), object: nil, userInfo: nil)
-                case "jumping_right":
-                    NotificationCenter.default.post(name: Notification.Name("didJumpInTheRight"), object: nil, userInfo: nil)
-                case "raising_left_hand":
-                    NotificationCenter.default.post(name: Notification.Name("didRaiseLeftHand"), object: nil, userInfo: nil)
-                case "raising_right_hand":
-                    NotificationCenter.default.post(name: Notification.Name("didRaiseRightHand"), object: nil, userInfo: nil)
-                default:
-                    ()
-            }
+            NotificationCenter.default.post(name: Notification.Name("action_detected"), object: label, userInfo: nil)
         }
     }
 
