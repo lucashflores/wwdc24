@@ -16,11 +16,11 @@ let package = Package(
         .iOSApplication(
             name: "AutoMotion",
             targets: ["AppModule"],
-            bundleIdentifier: "com.lucashflores.wwdckinect",
+            bundleIdentifier: "com.lucashflores.automotion",
             teamIdentifier: "7P886DJU8X",
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .car),
+            appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.indigo),
             supportedDeviceFamilies: [
                 .pad,

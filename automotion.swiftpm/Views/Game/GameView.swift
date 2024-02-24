@@ -11,12 +11,12 @@ struct GameView: View {
             GameViewControllerRepresentable()
             
             VStack {
-                HStack {
+                HStack(spacing: 25) {
                     Spacer()
                     Text("Coins: \(gameViewModel.coins)")
-                        .font(.system(size: 25, weight: .bold))
+                        .font(.system(size: 40, weight: .bold))
                     Text("Score: \(gameViewModel.score)")
-                        .font(.system(size: 25, weight: .bold))
+                        .font(.system(size: 40, weight: .bold))
                 }
                 .padding()
                 Spacer()
@@ -51,7 +51,16 @@ struct GameView: View {
             }
         }
         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-        .background(Color.red)
+        .background {
+            VStack(spacing: 32) {
+                ProgressView()
+                    .scaleEffect(3)
+                                    
+                Text("Please wait, it may take some time...")
+                    .font(.system(size: 50, weight: .bold))
+                
+            }
+        }
         .edgesIgnoringSafeArea(.all)
         
         

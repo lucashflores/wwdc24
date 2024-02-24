@@ -29,7 +29,6 @@ struct MenuView: View {
                         .onTapGesture {
                             currentScreen = .game
                         }
-                    CardButtonView(iconName: "trophy.fill", buttonText: "Score")
                     CardButtonView(iconName: "storefront.fill", buttonText: "Shop")
                     CardButtonView(iconName: "door.left.hand.open", buttonText: "Exit")
                         .onTapGesture {
@@ -38,6 +37,9 @@ struct MenuView: View {
                 }
                 .padding(.bottom, 250)
             }
+        }
+        .onAppear {
+            
         }
     }
 }

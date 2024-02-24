@@ -32,6 +32,11 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>AutoMotion</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>Meu App</key>
 		<dict>
 			<key>primary</key>
