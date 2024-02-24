@@ -30,7 +30,10 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     var items: SCNNode = SCNNode()
     var timer = Timer()
     var scene: SCNScene!
+    var gameTime: Int = 0
     var interval1: Double = 2
+    
+    var vel: Double = -150
     var paused = false
     var isCarRunningAction: Bool = false
     
@@ -133,6 +136,11 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     
     @objc func update4t(timer:Timer) -> Void {
         if !paused {
+            self.gameTime += Int(interval1)
+            if (self.gameTime / 30 > 0) {
+                let speedModifier: Double = Double(self.gameTime / 30)
+                vel = -150.0 - speedModifier*35.0
+            }
             DispatchQueue.main.async {
                 self.viewModel.score += 1
             }
@@ -145,7 +153,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
             let itemToSpawn = Int.random(in: 1...10)
             let roadToSpawn = roads.allCases.randomElement()!
             let pos: SCNVector3 = SCNVector3(roadToSpawn.rawValue,5,-200)
-            let vel: SCNVector3 = SCNVector3(0,0,-150)
+            let vel: SCNVector3 = SCNVector3(0,0,vel)
             let item: SCNNode
             if (itemToSpawn <= 1) {
                 item = coin(pos: pos, vel: vel)
@@ -167,6 +175,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         scene.rootNode.addChildNode(items)
         moveCar(move: .midRoad)
         self.viewModel.score = 0
+        self.gameTime = 0
         scene.isPaused=false
         paused=false
     }
@@ -196,7 +205,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         let leftFieldRange: ClosedRange<Float> = 40 ... 80
         let rightFieldRange: ClosedRange<Float> = -80 ... -40
         let spawnRange: ClosedRange<Float> = -220 ... -120
-        let vel: SCNVector3 = SCNVector3(0,0,-150)
+        let vel: SCNVector3 = SCNVector3(0,0,vel)
         var treesToSpawn: [SCNNode] = [SCNNode]()
     
         for _ in 1...2 {

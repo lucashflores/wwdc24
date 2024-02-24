@@ -33,13 +33,12 @@ struct MenuView: View {
                     CardButtonView(iconName: "storefront.fill", buttonText: "Shop")
                     CardButtonView(iconName: "door.left.hand.open", buttonText: "Exit")
                         .onTapGesture {
-//                            NSApplication.shared.terminate(nil)
+                            exit(0)
                         }
                 }
                 .padding(.bottom, 250)
             }
         }
-        
     }
 }
 

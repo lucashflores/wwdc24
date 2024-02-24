@@ -145,6 +145,13 @@ class VideoCapture: NSObject {
     private func disableCaptureSession() {
         if captureSession.isRunning { captureSession.stopRunning() }
     }
+    
+    func restartCaptureSession() {
+        if captureSession.isRunning {
+            captureSession.stopRunning()
+            captureSession.startRunning()
+        }
+    }
 }
 
 // MARK: - AV Capture Video Data Output Sample Buffer Delegate

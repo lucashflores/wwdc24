@@ -93,6 +93,9 @@ extension MainViewController {
         let totalFrames = (actionFrameCounts[actionLabel] ?? 0) + frameCount
 
         actionFrameCounts[actionLabel] = totalFrames
+        if (totalFrames < 15) {
+            videoCapture.restartCaptureSession()
+        }
     }
 
     private func updateUILabelsWithPrediction(_ prediction: ActionPrediction) {
@@ -116,12 +119,6 @@ extension MainViewController {
                     NotificationCenter.default.post(name: Notification.Name("didRaiseLeftHand"), object: nil, userInfo: nil)
                 case "raising_right_hand":
                     NotificationCenter.default.post(name: Notification.Name("didRaiseRightHand"), object: nil, userInfo: nil)
-//                case "crouching_middle":
-//                    NotificationCenter.default.post(name: Notification.Name("didCrouchInTheMiddle"), object: nil, userInfo: nil)
-//                case "crouching_left":
-//                    NotificationCenter.default.post(name: Notification.Name("didCrouchInTheLeft"), object: nil, userInfo: nil)
-//                case "crouching_right":
-//                    NotificationCenter.default.post(name: Notification.Name("didCrouchInTheRight"), object: nil, userInfo: nil)
                 default:
                     ()
             }

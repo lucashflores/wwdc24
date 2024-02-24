@@ -8,17 +8,19 @@ import PackageDescription
 import AppleProductTypes
 
 let package = Package(
-    name: "WWDCKinect",
+    name: "AutoMotion",
     platforms: [
         .iOS("16.0")
     ],
     products: [
         .iOSApplication(
-            name: "WWDCKinect",
+            name: "AutoMotion",
             targets: ["AppModule"],
+            bundleIdentifier: "com.lucashflores.wwdckinect",
+            teamIdentifier: "7P886DJU8X",
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .lightningBolt),
+            appIcon: .placeholder(icon: .car),
             accentColor: .presetColor(.indigo),
             supportedDeviceFamilies: [
                 .pad,
@@ -29,7 +31,11 @@ let package = Package(
                 .landscapeRight,
                 .landscapeLeft,
                 .portraitUpsideDown(.when(deviceFamilies: [.pad]))
-            ]
+            ],
+            capabilities: [
+                .camera(purposeString: "This app needs access to the camera so it can detect movements.")
+            ],
+            appCategory: .games
         )
     ],
     targets: [
