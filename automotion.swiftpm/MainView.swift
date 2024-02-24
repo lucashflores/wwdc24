@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MainView: View {
-    @State var currentScreen: Screen = .calibration
+    @State var currentScreen: Screen = .menu
     
     var body: some View {
         if (currentScreen == .onboarding) {
@@ -20,8 +20,8 @@ struct MainView: View {
         else if (currentScreen == .game) {
             GameView(currentScreen: $currentScreen)
         }
-        else if (currentScreen == .calibration) {
-            CalibrationView()
+        else if (currentScreen == .tutorial) {
+            TutorialView(currentScreen: $currentScreen)
         }
         else if (currentScreen == .shop) {
             //ShopView
@@ -35,7 +35,7 @@ enum Screen: Int {
     case menu = 1
     case game = 2
     case shop = 3
-    case calibration = 4
+    case tutorial = 4
     
 }
 

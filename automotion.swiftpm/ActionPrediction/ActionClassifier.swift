@@ -22,6 +22,7 @@ class ActionClassifier {
         let neckJoint = pose.landmarks.first(where: { $0.name == JointName.neck })
         let leftHipJoint = pose.landmarks.first(where: { $0.name == JointName.leftHip })
         let rightHipJoint = pose.landmarks.first(where: { $0.name == JointName.rightHip })
+        var isUsingHips: Bool = false
         var bodyX: Double
         var bodyY: Double
 
@@ -32,21 +33,25 @@ class ActionClassifier {
         else if let leftHipJoint = leftHipJoint, let rightHipJoint = rightHipJoint {
             bodyX = (leftHipJoint.location.x + rightHipJoint.location.x)/2
             bodyY = (leftHipJoint.location.y + rightHipJoint.location.y)/2
+            isUsingHips = true
         }
         else {
             return ActionPrediction(.noPerson)
         }
         
-        if (self.gameViewModel.gameOver && (leftWristJoint?.location.y ?? -1)  > bodyY) {
-            return ActionPrediction(label: "raising_right_hand")
-        }
-        
-        if (self.gameViewModel.gameOver && (rightWristJoint?.location.y ?? -1)  > bodyY) {
-            return ActionPrediction(label: "raising_left_hand")
+        if (!self.gameViewModel.isGameOngoing) {
+            if ((leftWristJoint?.location.y ?? -1)  > bodyY) {
+                return ActionPrediction(label: "raising_right_hand")
+            }
+            
+            if ((rightWristJoint?.location.y ?? -1)  > bodyY) {
+                return ActionPrediction(label: "raising_left_hand")
+            }
         }
         
         var position: String
         var action: String
+        
         if (bodyX <= 0.40) {
             position = "left"
         }
@@ -57,8 +62,16 @@ class ActionClassifier {
             position = "right"
         }
         
-        if (neckJoint != nil) {
-            if (bodyY <= 0.80) {
+        if (isUsingHips) {
+            if (bodyY <= 0.6) {
+                action = "standing"
+            }
+            else {
+                action = "jumping"
+            }
+        }
+        else if (!isUsingHips) {
+            if (bodyY <= 0.8) {
                 action = "standing"
             }
             else {
@@ -66,8 +79,10 @@ class ActionClassifier {
             }
         }
         else {
-            action = "jumping"
+            action = "standing"
         }
+        
+        
         return ActionPrediction(label: "\(action)_\(position)")
     }
 }

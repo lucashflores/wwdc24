@@ -29,6 +29,10 @@ struct MenuView: View {
                         .onTapGesture {
                             currentScreen = .game
                         }
+                    CardButtonView(iconName: "graduationcap.fill", buttonText: "Tutorial")
+                        .onTapGesture {
+                            currentScreen = .tutorial
+                        }
                     CardButtonView(iconName: "storefront.fill", buttonText: "Shop")
                     CardButtonView(iconName: "door.left.hand.open", buttonText: "Exit")
                         .onTapGesture {

@@ -109,7 +109,7 @@ extension MainViewController {
         let renderFormat = UIGraphicsImageRendererFormat()
         renderFormat.scale = 1.0
 
-        let frameSize = CGSize(width: 900, height: 600)
+        let frameSize = CGSize(width: frame.width, height: frame.height)
         let poseRenderer = UIGraphicsImageRenderer(size: frameSize,
                                                    format: renderFormat)
 

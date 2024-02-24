@@ -79,6 +79,10 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         scnView.pointOfView?.camera?.zFar = 700
         scnView.backgroundColor = UIColor.black
         view.addSubview(scnView)
+        
+        DispatchQueue.main.async {
+            self.viewModel.isGameOngoing = true
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -178,6 +182,9 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         self.gameTime = 0
         scene.isPaused=false
         paused=false
+        DispatchQueue.main.async {
+            self.viewModel.isGameOngoing = true
+        }
     }
     
     
@@ -279,6 +286,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         paused = true
         DispatchQueue.main.async {
             self.viewModel.gameOver = true
+            self.viewModel.isGameOngoing = false
         }
         
     }

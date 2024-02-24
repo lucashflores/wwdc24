@@ -19,6 +19,7 @@ import UIKit
 class GameViewModel: ObservableObject {
     static var instance: GameViewModel = GameViewModel()
     @Published var gameOver = false
+    @Published var isGameOngoing = false
     @Published var score: Int = 0
     @Published var coins: Int = 0
 
