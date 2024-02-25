@@ -36,6 +36,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     var vel: Double = -150
     var paused = false
     var isCarRunningAction: Bool = false
+    var carToUse = (UserDefaults.standard.object(forKey: "selectedCar") as? String)?.lowercased() ?? "race"
     var fullScreenWidth = UserDefaults.standard.double(forKey: "fullScreenWidth")
     var fullScreenHeight = UserDefaults.standard.double(forKey: "fullScreenHeight")
     
@@ -49,7 +50,8 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         scene = SCNScene(named: "main.scn")!
         cameraNode = scene.rootNode.childNode(withName: "camera", recursively: true)!
         
-        car = scene.rootNode.childNode(withName: "car", recursively: true)!
+        car = scene.rootNode.childNode(withName: carToUse, recursively: true)!
+        car.position = SCNVector3(x: 0, y: 3.6, z: -820)
         car.physicsBody = SCNPhysicsBody(type: .dynamic, shape: SCNPhysicsShape(node: car))
         car.physicsBody?.type = .dynamic
         car.physicsBody?.categoryBitMask = 3
@@ -193,11 +195,11 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     
     
     func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
-        if contact.nodeB.name == "obstacle" && contact.nodeA.name == "car" {
+        if contact.nodeB.name == "obstacle" && contact.nodeA.name == carToUse {
             print("game over",contact.nodeA.name!,contact.nodeB.name!)
             gameOver()
         }
-        else if contact.nodeB.name == "spawnedCoin" && contact.nodeA.name == "car" {
+        else if contact.nodeB.name == "spawnedCoin" && contact.nodeA.name == carToUse {
             contact.nodeB.removeFromParentNode()
             DispatchQueue.main.async {
                 self.viewModel.coins += 1
