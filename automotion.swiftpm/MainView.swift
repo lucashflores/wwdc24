@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MainView: View {
-    @State var currentScreen: Screen = .menu
+    @State var currentScreen: Screen = .onboarding
     
     var body: some View {
         if (currentScreen == .onboarding) {
@@ -24,7 +24,7 @@ struct MainView: View {
             TutorialView(currentScreen: $currentScreen)
         }
         else if (currentScreen == .shop) {
-            //ShopView
+            ShopView(currentScreen: $currentScreen)
         }
     }
     

@@ -54,22 +54,33 @@ struct GameOverView: View {
             NotificationCenter.default.addObserver(forName: Notification.Name("action_detected"), object: nil, queue: nil) { (notification) in
                 let action = notification.object as! String
                 if (action == "raising_right_hand") {
-                    notifyGameRestart()
+                    playAgain()
                 }
                 else if (action == "raising_left_hand") {
                     mainMenu()
                 }
             }
+            print(UserDefaults.standard.integer(forKey: "coins"))
+            print(coins)
+            UserDefaults.standard.setValue(UserDefaults.standard.integer(forKey: "coins") + coins, forKey: "coins")
         }
     }
     
+    func notifyDismissMain() {
+        NotificationCenter.default.post(name: Notification.Name("dismissMain"), object: nil, userInfo: nil)
+    }
     
     func notifyGameRestart() {
         NotificationCenter.default.post(name: Notification.Name("restartGame"), object: nil, userInfo: nil)
     }
     
-    func mainMenu() {
+    func playAgain() {
         notifyGameRestart()
+        notifyDismissMain()
+    }
+    
+    func mainMenu() {
+        notifyDismissMain()
         currentScreen = .menu
     }
 }

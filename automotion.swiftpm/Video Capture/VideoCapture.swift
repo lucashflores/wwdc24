@@ -97,39 +97,7 @@ class VideoCapture: NSObject {
 
     /// A Boolean that indicates whether the video capture minimize camera shake.
     private var videoStabilizationEnabled = false
-
-    /// Changes the camera selection between the front- and back-facing cameras.
-    func toggleCameraSelection() {
-        cameraPosition = cameraPosition == .back ? .front : .back
-    }
-
-    /// Adjusts the video orientation to match the device's orientation.
-    func updateDeviceOrientation() {
-        // Retrieve the device's orientation from UIKit.
-        orientation = .portrait
-//        let currentPhysicalOrientation = UIDevice.current.orientation
-//
-//        // Use the device's physical orientation to orient the camera.
-//        switch currentPhysicalOrientation {
-//
-//        // Default to portrait if face up, face down, or unknown.
-//        case .portrait, .faceUp, .faceDown, .unknown:
-//            // Use portrait for "flat" orientations.
-//            orientation = .portrait
-//        case .portraitUpsideDown:
-//            orientation = .portraitUpsideDown
-//        case .landscapeLeft:
-//            // UIKit's "left" is the equivalent to AVFoundation's "right."
-//            orientation = .landscapeRight
-//        case .landscapeRight:
-//            // UIKit's "right" is the equivalent to AVFoundation's "left."
-//            orientation = .landscapeLeft
-//
-//        // Use portrait as the default for any future, unknown cases.
-//        @unknown default:
-//            orientation = .portrait
-//        }
-    }
+    
     @objc func restartFrames() {
         frames = 0
     }
@@ -142,7 +110,7 @@ class VideoCapture: NSObject {
         }
     }
 
-    private func disableCaptureSession() {
+    func disableCaptureSession() {
         if captureSession.isRunning { captureSession.stopRunning() }
     }
     

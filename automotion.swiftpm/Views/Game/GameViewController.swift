@@ -36,11 +36,13 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
     var vel: Double = -150
     var paused = false
     var isCarRunningAction: Bool = false
+    var fullScreenWidth = UserDefaults.standard.double(forKey: "fullScreenWidth")
+    var fullScreenHeight = UserDefaults.standard.double(forKey: "fullScreenHeight")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configureCommandsNotifications()
-        let sizeScnView = CGSize(width: 2250, height: 1405)
+        let sizeScnView = CGSize(width: fullScreenWidth, height: fullScreenHeight)
         
         scnView.frame = CGRect(origin: .zero, size: sizeScnView)
 

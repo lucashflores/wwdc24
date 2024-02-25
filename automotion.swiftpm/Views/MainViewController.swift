@@ -46,6 +46,13 @@ extension MainViewController {
             }
         }
         startVideoCapture()
+        
+        NotificationCenter.default.addObserver(forName: Notification.Name("dismissMain"), object: nil, queue: nil) { notification in
+            self.videoCapture?.disableCaptureSession()
+            self.videoCapture = nil
+            self.videoProcessingChain = nil
+            self.dismiss(animated: false)
+        }
     }
     
     func startVideoCapture() {
@@ -55,7 +62,7 @@ extension MainViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        videoCapture.updateDeviceOrientation()
+//        videoCapture.updateDeviceOrientation()
     }
 }
 
