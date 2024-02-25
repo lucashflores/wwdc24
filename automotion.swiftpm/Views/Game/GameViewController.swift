@@ -181,6 +181,7 @@ class GameViewController: UIViewController, SCNPhysicsContactDelegate {
         scene.rootNode.addChildNode(items)
         moveCar(move: .midRoad)
         self.viewModel.score = 0
+        self.viewModel.coins = 0
         self.gameTime = 0
         scene.isPaused=false
         paused=false

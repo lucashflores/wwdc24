@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MainView: View {
-    @State var currentScreen: Screen = .onboarding
+    @State var currentScreen: Screen = .menu
     
     var body: some View {
         if (currentScreen == .onboarding) {

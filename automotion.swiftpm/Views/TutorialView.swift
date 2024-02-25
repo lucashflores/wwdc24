@@ -188,11 +188,11 @@ func getText(step: Step) -> String {
         case .standMiddle:
             return "Now, move away from the screen until your hip joints are visible and the action detected is standing_middle"
         case .standMiddleSuccess:
-            return "Well done!"
+            return "Good, raise your right hand to proceed."
         case .standRight:
             return "Now stand at the right side of the screen, so the action detected is standing_right."
         case .standRightSuccess:
-            return "Good, raise your right hand to proceed."
+            return "Well done!"
         case .dodgingExplanation:
             return "Now you've learned the basics of dodging. In AutoMotion, obstacles will appear in one of the three roads. One of the obstacles, the stones, can only be dodged and the other, the traps, can be dodged or jumped, which we will cover next, but this makes dodging the best way to avoid obstacles."
         case .jump:
@@ -200,7 +200,7 @@ func getText(step: Step) -> String {
         case .jumpSuccess:
             return "Well done, this was the last move we were going to learn in this tutorial. Raise your right hand to go to the next step."
         case .jumpingExplanation:
-            return "Jumping is the other way to avoid obstacles, but it only works for traps, so watch out for that. Also, one thing that you also need to know is about the coins. Coins also spawn on the roads but can be collected and traded for new cars on the shop."
+            return "Jumping is the other way to avoid obstacles, but it only works for traps, so watch out for that. Also, one thing that you need to know is about the coins. Coins also spawn on the roads but can be collected and traded for new cars on the shop."
         case .end:
             return "You are all set to play now. Raise your left hand to go back to menu or the right one to go straight into the game. Have fun!"
     }
